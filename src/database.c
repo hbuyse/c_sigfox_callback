@@ -269,7 +269,13 @@ unsigned char sigfox_delete_db(sqlite3      **db,
     }
     else
     {
-        fprintf(stdout, "Tables created successfully\n");
+        fprintf(stdout, "Tables deleted successfully\n");
+    }
+
+    if (*db)
+    {
+        sqlite3_close(*db);
+        *db = NULL;
     }
 
     return (0);
