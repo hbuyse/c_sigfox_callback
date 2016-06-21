@@ -10,6 +10,8 @@
 #ifndef __DATABASE_H__
 #define __DATABASE_H__
 
+#include <frames.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,6 +38,28 @@ unsigned char sigfox_open_db(sqlite3 **db, const char *db_name);
  * \return     0: no error / other: error
  */
 unsigned char sigfox_create_tables(sqlite3 **db, const char *sql_script_path);
+
+
+/**
+ * \brief      Insert a device into the device table of the database
+ *
+ * \param      db      The database
+ * \param[in]  device  The device
+ *
+ * \return     0: no error / other: error
+ */
+unsigned char sigfox_insert_devices(sqlite3 **db, const sigfox_device_t device);
+
+
+/**
+ * \brief      Insert a raws structure into the raws table of the database
+ *
+ * \param      db    The database
+ * \param[in]  raws  The device
+ *
+ * \return     0: no error / other: error
+ */
+unsigned char sigfox_insert_raws(sqlite3 **db, const sigfox_raws_t raws);
 
 
 /**

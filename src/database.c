@@ -11,6 +11,25 @@
 #include <stdlib.h>          // calloc, NULL
 #include <time.h>          // time_t, struct tm, time, localtime, strftime
 
+#include <frames.h>
+
+
+/**
+ * \brief Maximum length of a buffer
+ */
+#define BUFFER_MAX_LENGTH 4096
+
+
+/**
+ * \brief SQL command to insert data from a sigfox_device_t to the database
+ */
+#define INSERT_DEVICES "INSERT INTO `devices` VALUES (NULL, '%s', %d, %d);"
+
+
+/**
+ * \brief SQL command to insert data from a sigfox_raws_t to the database
+ */
+#define INSERT_RAWS "INSERT INTO `raws` VALUES (NULL, %ld, '%s', %.2f, '%s', %u, '%s', %u, %.2f, %.2f, %u, %u, %u);"
 
 static int callback_row(void    *data,
                         int     argc,
@@ -43,22 +62,27 @@ unsigned char sigfox_open_db(sqlite3    **db,
                              )
 {
     int     rc = 0;
+    unsigned char     res = 0;
 
 
     rc = sqlite3_open(db_name, db);
 
-    if ( rc != SQLITE_OK )
+    switch ( rc )
     {
-        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(*db) );
+        case SQLITE_OK:
+#ifdef __DEBUG__
+            fprintf(stdout, "[%s] Opened database successfully\n", __func__);
+#endif
+            res = 0;
+            break;
 
-        return (1);
+        default:
+            fprintf(stderr, "[%s] Can't open database: %s\n", __func__, sqlite3_errmsg(*db) );
+            res = 1;
+            break;
     }
-    else
-    {
-        printf("Opened database successfully\n");
 
-        return (0);
-    }
+    return (res);
 }
 
 
@@ -67,7 +91,7 @@ unsigned char sigfox_create_tables(sqlite3      **db,
                                    const char   *sql_script_path
                                    )
 {
-    int         rc                  = 0;
+    int         rc = 0;
     char        *sqlite3_error_msg  = NULL;
 
 
@@ -82,11 +106,13 @@ unsigned char sigfox_create_tables(sqlite3      **db,
 
     if ( ! sql_script )
     {
-        fprintf(stderr, "Can not open the file %s\n", (sql_script_path) ? sql_script_path : "./sqls/create_tables.sql");
+        fprintf(stderr,
+                "[%s] Can not open the file %s\n",
+                __func__,
+                (sql_script_path) ? sql_script_path : "./sqls/create_tables.sql");
 
         return (1);
     }
-
 
     // Get the size of the SQL script
     fseek(sql_script, 0, SEEK_END);
@@ -100,66 +126,120 @@ unsigned char sigfox_create_tables(sqlite3      **db,
 
     if ( read != file_size )
     {
-        fprintf(stderr, "read != file_size\n");
+        fprintf(stderr, "[%s] read != file_size\n", __func__);
 
         return (2);
     }
 
-
     // Execute SQL statement
-    rc = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
+    rc          = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
 
     if ( rc != SQLITE_OK )
     {
-        fprintf(stderr, "SQL error: %s\n", sqlite3_error_msg);
+        fprintf(stderr, "[%s] SQL error: %s\n", __func__, sqlite3_error_msg);
         sqlite3_free(sqlite3_error_msg);
 
         return (3);
     }
+
+#ifdef __DEBUG__
     else
     {
-        fprintf(stdout, "Tables created successfully\n");
+        fprintf(stdout, "[%s] Tables created successfully\n", __func__);
     }
+#endif
 
     return (0);
 }
 
 
 
-#if 0
-void sqlite_insert(sqlite3 **db)
+unsigned char sigfox_insert_devices(sqlite3                 **db,
+                                    const sigfox_device_t   device
+                                    )
 {
-    char        *sql    = NULL;
-    int         rc      = 0;
-    char        *sqlite3_error_msg = NULL;
+    unsigned char       res = 0;
+    int                 rc  = 0;
+    char                *sqlite3_error_msg = NULL;
+    char                sql[BUFFER_MAX_LENGTH];
 
 
-    /* Create SQL statement */
-    sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) VALUES (1, 'Paul', 32, 'California', 20000.00 ); " \
-          "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) VALUES (2, 'Allen', 25, 'Texas', 15000.00 ); " \
-          "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) VALUES (3, 'Teddy', 23, 'Norway', 20000.00 );" \
-          "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) VALUES (4, 'Mark', 25, 'Rich-Mond ', 65000.00 );" \
-          "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) VALUES (5, 'David', 27, 'Texas', 85000.00 );" \
-          "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) VALUES (6, 'Kim', 22, 'South-Hall', 45000.00 );" \
-          "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) VALUES (7, 'James', 24, 'Houston', 10000.00 );";
+    sprintf(sql, INSERT_DEVICES, device.id_modem, device.attribution, device.timestamp_attribution);
 
 
-    /* Execute SQL statement */
-    rc  = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
+    // Execute SQL statement
+    rc = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
 
-    if ( rc != SQLITE_OK )
+    switch ( rc )
     {
-        fprintf(stderr, "SQL error: %s\n", sqlite3_error_msg);
-        sqlite3_free(sqlite3_error_msg);
+        case SQLITE_OK:
+#ifdef __DEBUG__
+            fprintf(stdout, "[%s] Device %s inserted into devices table\n", __func__, device.id_modem);
+#endif
+            res = 0;
+            break;
+
+        case SQLITE_CONSTRAINT:
+            fprintf(stderr,
+                    "[%s] Device %s already in the database (SQL Error: %s)\n",
+                    __func__,
+                    device.id_modem,
+                    sqlite3_error_msg);
+            sqlite3_free(sqlite3_error_msg);
+            res = 2;
+            break;
+
+        default:
+            fprintf(stderr, "[%s] SQL error (%d): %s\n", __func__, rc, sqlite3_error_msg);
+            sqlite3_free(sqlite3_error_msg);
+            res = 1;
+            break;
     }
-    else
-    {
-        printf("INSERT done successfully\n");
-    }
+
+    return (res);
 }
 
 
 
+unsigned char sigfox_insert_raws(sqlite3                **db,
+                                 const sigfox_raws_t    raws
+                                 )
+{
+    unsigned char       res = 0;
+    int                 rc  = 0;
+    char                *sqlite3_error_msg = NULL;
+    char                sql[BUFFER_MAX_LENGTH];
+
+
+    sprintf(sql, INSERT_RAWS, raws.timestamp, raws.id_modem, raws.snr, raws.station, raws.ack, raws.data, 
+            raws.duplicate, raws.avg_snr, raws.rssi, raws.latitude, raws.longitude, raws.seq_number);
+
+
+    // Execute SQL statement
+    rc = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
+
+    switch ( rc )
+    {
+        case SQLITE_OK:
+#ifdef __DEBUG__
+            fprintf(stdout, "[%s] Raw %s inserted into raws table\n", __func__, raws.data);
+#endif
+            res = 0;
+            break;
+
+        default:
+            fprintf(stderr, "[%s] SQL error (%d): %s\n", __func__, rc, sqlite3_error_msg);
+            sqlite3_free(sqlite3_error_msg);
+            res = 1;
+            break;
+    }
+
+    return (res);
+}
+
+
+
+#if 0
 void sqlite_select(sqlite3 **db)
 {
     char        *sql    = NULL;
@@ -195,7 +275,7 @@ void sqlite_update(sqlite3 **db)
     char        *sqlite3_error_msg = NULL;
 
 
-    sql = "UPDATE COMPANY set SALARY = 25000.00 where ID=1";
+    sql = "UPDATE COMPANY set South-HallARY = 25000.00 where ID=1";
 
 
     /* Execute SQL statement */
@@ -218,7 +298,7 @@ unsigned char sigfox_delete_db(sqlite3      **db,
                                const char   *sql_script_path
                                )
 {
-    int         rc                  = 0;
+    int         rc = 0;
     char        *sqlite3_error_msg  = NULL;
 
 
@@ -238,7 +318,6 @@ unsigned char sigfox_delete_db(sqlite3      **db,
         return (1);
     }
 
-
     // Get the size of the SQL script
     fseek(sql_script, 0, SEEK_END);
     file_size   = ftell(sql_script);
@@ -256,9 +335,8 @@ unsigned char sigfox_delete_db(sqlite3      **db,
         return (2);
     }
 
-
     // Execute SQL statement
-    rc = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
+    rc          = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
 
     if ( rc != SQLITE_OK )
     {
@@ -267,12 +345,15 @@ unsigned char sigfox_delete_db(sqlite3      **db,
 
         return (3);
     }
+
+#ifdef __DEBUG__
     else
     {
         fprintf(stdout, "Tables deleted successfully\n");
     }
+#endif
 
-    if (*db)
+    if ( *db )
     {
         sqlite3_close(*db);
         *db = NULL;
