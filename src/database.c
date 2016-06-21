@@ -8,9 +8,7 @@
 
 #include <sqlite3.h>          // sqlite3_open, sqlite3_exec, sqlite3_free
 #include <stdio.h>          // fprintf
-#include <stdlib.h>          // exit
-// #include <database.h>          // sqlite_open_db, sqlite_create_table, sqlite_insert, sqlite_select, sqlite_update,
-                                // sqlite_delete
+#include <stdlib.h>          // calloc, NULL
 #include <time.h>          // time_t, struct tm, time, localtime, strftime
 
 
@@ -39,81 +37,93 @@ static int callback_row(void    *data,
 }
 
 
-unsigned char sigfox_open_db(sqlite3 **db, const char* db_name)
+
+unsigned char sigfox_open_db(sqlite3    **db,
+                             const char *db_name
+                             )
 {
-    unsigned char   res = 0;
-    int             rc = 0;
+    int     rc = 0;
+
 
     rc = sqlite3_open(db_name, db);
 
     if ( rc != SQLITE_OK )
     {
         fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(*db) );
-        return 1;
+
+        return (1);
     }
     else
     {
         printf("Opened database successfully\n");
-        return 0;
+
+        return (0);
     }
 }
 
 
-unsigned char sigfox_create_tables(sqlite3 **db, const char* sql_script_path)
+
+unsigned char sigfox_create_tables(sqlite3      **db,
+                                   const char   *sql_script_path
+                                   )
 {
-    int         rc      = 0;
-    char        *sqlite3_error_msg = NULL;
-    
-    // 
-    FILE        *sql_script = NULL;
-    size_t      file_size = 0;
-    char        *sql    = NULL;
-    size_t      read    = 0;
+    int         rc                  = 0;
+    char        *sqlite3_error_msg  = NULL;
 
 
-    sql_script = (sql_script_path != NULL) ? fopen(sql_script_path, "r") : fopen("./sqls/database.sql", "r");
+    // Script SQL
+    FILE        *sql_script         = NULL;
+    size_t      file_size           = 0;
+    char        *sql                = NULL;
+    size_t      read                = 0;
 
-    if (! sql_script)
+
+    sql_script = (sql_script_path != NULL) ? fopen(sql_script_path, "r") : fopen("./sqls/create_tables.sql", "r");
+
+    if ( ! sql_script )
     {
-        fprintf(stderr, "Can not open the file %s\n", (sql_script_path) ? sql_script_path : "./sqls/database.sql");
+        fprintf(stderr, "Can not open the file %s\n", (sql_script_path) ? sql_script_path : "./sqls/create_tables.sql");
 
-        return 1;
+        return (1);
     }
 
 
     // Get the size of the SQL script
     fseek(sql_script, 0, SEEK_END);
-    file_size = ftell(sql_script);
+    file_size   = ftell(sql_script);
     fseek(sql_script, 0, SEEK_SET);
 
 
     // Create SQL statement
-    sql = (char*) calloc(file_size + 1, sizeof(char));
-    read = fread(sql, sizeof(char), file_size, sql_script);
+    sql         = (char *) calloc(file_size + 1, sizeof(char) );
+    read        = fread(sql, sizeof(char), file_size, sql_script);
 
-    if (read != file_size)
+    if ( read != file_size )
     {
         fprintf(stderr, "read != file_size\n");
-        return 2;
+
+        return (2);
     }
 
+
     // Execute SQL statement
-    rc  = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
+    rc = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
 
     if ( rc != SQLITE_OK )
     {
         fprintf(stderr, "SQL error: %s\n", sqlite3_error_msg);
         sqlite3_free(sqlite3_error_msg);
 
-        return 3;
+        return (3);
     }
     else
     {
-        printf("Tables created successfully\n");
+        fprintf(stdout, "Tables created successfully\n");
     }
 
-    return 0;
+    return (0);
 }
+
 
 
 #if 0
@@ -204,27 +214,63 @@ void sqlite_update(sqlite3 **db)
 #endif
 
 
-void sigfox_delete_db(sqlite3 *db)
+unsigned char sigfox_delete_db(sqlite3      **db,
+                               const char   *sql_script_path
+                               )
 {
-    char        *sql    = NULL;
-    int         rc      = 0;
-    char        *sqlite3_error_msg = NULL;
+    int         rc                  = 0;
+    char        *sqlite3_error_msg  = NULL;
 
 
-    /* Create merged SQL statement */
-    sql = "DELETE from COMPANY where ID=2";
+    // Script SQL
+    FILE        *sql_script         = NULL;
+    size_t      file_size           = 0;
+    char        *sql                = NULL;
+    size_t      read                = 0;
 
 
-    /* Execute SQL statement */
-    rc  = sqlite3_exec(db, sql, NULL, NULL, &sqlite3_error_msg);
+    sql_script = (sql_script_path != NULL) ? fopen(sql_script_path, "r") : fopen("./sqls/delete_tables.sql", "r");
+
+    if ( ! sql_script )
+    {
+        fprintf(stderr, "Can not open the file %s\n", (sql_script_path) ? sql_script_path : "./sqls/delete_tables.sql");
+
+        return (1);
+    }
+
+
+    // Get the size of the SQL script
+    fseek(sql_script, 0, SEEK_END);
+    file_size   = ftell(sql_script);
+    fseek(sql_script, 0, SEEK_SET);
+
+
+    // Create SQL statement
+    sql         = (char *) calloc(file_size + 1, sizeof(char) );
+    read        = fread(sql, sizeof(char), file_size, sql_script);
+
+    if ( read != file_size )
+    {
+        fprintf(stderr, "read != file_size\n");
+
+        return (2);
+    }
+
+
+    // Execute SQL statement
+    rc = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
 
     if ( rc != SQLITE_OK )
     {
         fprintf(stderr, "SQL error: %s\n", sqlite3_error_msg);
         sqlite3_free(sqlite3_error_msg);
+
+        return (3);
     }
     else
     {
-        printf("DELETE done successfully\n");
+        fprintf(stdout, "Tables created successfully\n");
     }
+
+    return (0);
 }

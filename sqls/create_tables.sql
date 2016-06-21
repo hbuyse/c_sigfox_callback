@@ -1,15 +1,8 @@
 -- CREATION OF THE SIGFOX TABLES WITH SOME DATA
 
-
--- Delete the tables if they exists
-DROP TABLE IF EXISTS `raws`;
-DROP TABLE IF EXISTS `events`;
-DROP TABLE IF EXISTS `devices`;
-
-
--- --
--- -- Create 'raws' table
--- --
+--
+-- Create 'raws' table
+--
 CREATE TABLE IF NOT EXISTS `raws` (
   `idraws` INTEGER PRIMARY KEY,
   `time` INTEGER NOT NULL,
@@ -26,9 +19,9 @@ CREATE TABLE IF NOT EXISTS `raws` (
 );
 
 
--- --
--- -- Create 'events' table
--- --
+--
+-- Create 'events' table
+--
 CREATE TABLE IF NOT EXISTS `events` (
   `idevents` INTEGER PRIMARY KEY,
   `idmodem` TEXT NOT NULL,
@@ -47,9 +40,9 @@ CREATE TABLE IF NOT EXISTS `events` (
 );
 
 
--- --
--- -- Create 'devices' table
--- --
+--
+-- Create 'devices' table
+--
 CREATE TABLE IF NOT EXISTS `devices` (
   `iddevices` INTEGER PRIMARY KEY,
   `idmodem` TEXT NOT NULL,
