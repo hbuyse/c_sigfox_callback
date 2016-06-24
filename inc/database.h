@@ -62,6 +62,12 @@ unsigned char sigfox_insert_devices(sqlite3 **db, const sigfox_device_t device);
 unsigned char sigfox_insert_raws(sqlite3 **db, const sigfox_raws_t raws);
 
 
+json_object* sigfox_select_raws(sqlite3 **db);
+
+
+json_object* sigfox_select_devices(sqlite3 **db);
+
+
 /**
  * \brief      Delete tables from the sqlite database
  *

@@ -6,12 +6,14 @@
 #include <stdio.h>          // fprintf
 #include <sqlite3.h>          // sqlite3
 #include <time.h>           // time
+#include <json/json.h>          // json_object, json_object_array_length
 
 #include <database.h>          // sigfox_open_db
 
 int main(void)
 {
     sqlite3             *db     = NULL;
+    json_object         *jarray = NULL;
 
     sigfox_device_t     device  =
     {
@@ -51,6 +53,24 @@ int main(void)
 
     // Add a raw structure into the list
     sigfox_insert_raws(&db, raw);
+
+
+    // Print devices
+    jarray  = sigfox_select_devices(&db);
+    fprintf(stdout, "DEVICES : %d elements\n", json_object_array_length(jarray) );
+
+#ifdef __DEBUG__
+    fprintf(stdout, "%s\n", json_object_to_json_string(jarray) );
+#endif
+
+
+    // Print raws
+    jarray  = sigfox_select_raws(&db);
+    fprintf(stdout, "RAWS    : %d elements\n", json_object_array_length(jarray) );
+
+#ifdef __DEBUG__
+    fprintf(stdout, "%s\n", json_object_to_json_string(jarray) );
+#endif
 
 
     // Delete tables

@@ -9,7 +9,9 @@
 #include <sqlite3.h>          // sqlite3_open, sqlite3_exec, sqlite3_free
 #include <stdio.h>          // fprintf
 #include <stdlib.h>          // calloc, NULL
+#include <string.h>          // strcmp
 #include <time.h>          // time_t, struct tm, time, localtime, strftime
+#include <json/json.h>          // json_object
 
 #include <frames.h>
 
@@ -31,7 +33,18 @@
  */
 #define INSERT_RAWS "INSERT INTO `raws` VALUES (NULL, %ld, '%s', %.2f, '%s', %u, '%s', %u, %.2f, %.2f, %u, %u, %u);"
 
-static int callback_row(void    *data,
+
+/**
+ * \brief      Print the each row of the dabase into stdout
+ *
+ * \param      data      Pointer to the data we want to get back
+ * \param[in]  argc      Number of colums
+ * \param      argv      List of columns' values in the columns
+ * \param      col_name  List of columns' names of the column
+ *
+ * \return     0
+ */
+static int callback_raw(void    *data __attribute__( (unused) ),
                         int     argc,
                         char    **argv,
                         char    **col_name
@@ -40,17 +53,87 @@ static int callback_row(void    *data,
     int     i = 0;
 
 
-    if ( data )
+    for ( i = 0; i < argc; i++ )
     {
-        printf("%s\t", (char *) data);
+        fprintf(stdout, "%s: %s\t", col_name[i], (argv[i]) ? argv[i] : NULL);
     }
+
+    fprintf(stdout, "\n");
+
+    return (0);
+}
+
+
+
+/**
+ * \brief      Get a JSON object from the row
+ *
+ * \param      data      Pointer to the data we want to get back
+ * \param[in]  argc      Number of columns
+ * \param      argv      List of columns' values in the columns
+ * \param      col_name  List of columns' names of the column
+ *
+ * \return     0
+ */
+static int callback_json(void   *data,
+                         int    argc,
+                         char   **argv,
+                         char   **col_name
+                         )
+{
+    int             i       = 0;
+    json_object     *jobj   = NULL;
+
+
+    // Cast the JSON array
+    json_object     *jarray = (json_object *) data;
+
+
+    // Create a new JSON pbject
+    jobj = json_object_new_object();
 
     for ( i = 0; i < argc; i++ )
     {
-        printf("%s = %s\t", col_name[i], argv[i] ? argv[i] : "NULL");
+        json_object     *value = NULL;
+
+
+        // Fill the JSON object
+        if ( argv[i] == NULL )
+        {
+            json_object_object_add(jobj, col_name[i], NULL);
+            continue;
+        }
+
+
+        // In function of the key, we create a speficic JSON object type
+        if ( (strcmp(col_name[i], "idraws") == 0) || (strcmp(col_name[i], "time") == 0) ||
+             (strcmp(col_name[i], "lat") == 0) || (strcmp(col_name[i], "lon") == 0) ||
+             (strcmp(col_name[i], "seqNumber") == 0) || (strcmp(col_name[i], "iddevices") == 0) ||
+             (strcmp(col_name[i], "attribution") == 0) || (strcmp(col_name[i], "timestamp_attribution") == 0) )
+        {
+            value = json_object_new_int(atoi(argv[i]) );
+        }
+        else if ( (strcmp(col_name[i], "ack") == 0) || (strcmp(col_name[i], "duplicate") == 0) )
+        {
+            // fprintf(stdout, "Find %s", argv[i]);
+            value = json_object_new_boolean(atoi(argv[i]) );
+        }
+        else if ( (strcmp(col_name[i], "snr") == 0) || (strcmp(col_name[i], "avgSignal") == 0) ||
+                  (strcmp(col_name[i], "rssi") == 0) )
+        {
+            value = json_object_new_double(atof(argv[i]) );
+        }
+        else
+        {
+            value = json_object_new_string(argv[i]);
+        }
+
+        json_object_object_add(jobj, col_name[i], value);
     }
 
-    printf("\n");
+
+    // Add the JSON object into the JSON array
+    json_object_array_add(jarray, jobj);
 
     return (0);
 }
@@ -239,66 +322,65 @@ unsigned char sigfox_insert_raws(sqlite3                **db,
 
 
 
-#if 0
-void sqlite_select(sqlite3 **db)
+json_object* sigfox_select_raws(sqlite3 **db)
 {
-    char        *sql    = NULL;
-    int         rc      = 0;
-    char        *sqlite3_error_msg = NULL;
+    int             rc      = 0;
+    char            *sqlite3_error_msg = NULL;
+    json_object     *jarray = NULL;
 
 
-    // #define DATA   "Callback function called"
+    // Create the JSON array
+    jarray  = json_object_new_array();
 
-    sql = "SELECT * from COMPANY";
+    char     sql[]          = "SELECT * from `raws`";
 
 
-    /* Execute SQL statement */
-    #ifdef DATA
-    rc  = sqlite3_exec(*db, sql, callback_row, (void *) DATA, &sqlite3_error_msg);
-    #else
-    rc  = sqlite3_exec(*db, sql, callback_row, NULL, &sqlite3_error_msg);
-    #endif
+    // Execute SQL statement
+    rc      = sqlite3_exec(*db, sql, callback_json, (void *) jarray, &sqlite3_error_msg);
 
     if ( rc != SQLITE_OK )
     {
         fprintf(stderr, "SQL error: %s\n", sqlite3_error_msg);
         sqlite3_free(sqlite3_error_msg);
     }
+
+    return (jarray);
 }
 
 
 
-void sqlite_update(sqlite3 **db)
+json_object* sigfox_select_devices(sqlite3 **db)
 {
-    char        *sql    = NULL;
-    int         rc      = 0;
-    char        *sqlite3_error_msg = NULL;
+    int             rc      = 0;
+    char            *sqlite3_error_msg = NULL;
+    json_object     *jarray = NULL;
 
 
-    sql = "UPDATE COMPANY set South-HallARY = 25000.00 where ID=1";
+    // Create the JSON array
+    jarray  = json_object_new_array();
+
+    char     sql[]          = "SELECT * from `devices`";
 
 
-    /* Execute SQL statement */
-    rc  = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
+    // Execute SQL statement
+    rc      = sqlite3_exec(*db, sql, callback_json, (void *) jarray, &sqlite3_error_msg);
 
     if ( rc != SQLITE_OK )
     {
         fprintf(stderr, "SQL error: %s\n", sqlite3_error_msg);
         sqlite3_free(sqlite3_error_msg);
     }
-    else
-    {
-        printf("UPDATE done successfully\n");
-    }
+
+    return (jarray);
 }
-#endif
+
 
 
 unsigned char sigfox_delete_db(sqlite3      **db,
                                const char   *sql_script_path
                                )
 {
-    int         rc = 0;
+    int         rc                  = 0;
     char        *sqlite3_error_msg  = NULL;
 
 
