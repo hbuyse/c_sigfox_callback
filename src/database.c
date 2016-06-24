@@ -52,9 +52,15 @@ static int callback_raw(void    *data __attribute__( (unused) ),
 {
     int     i = 0;
 
-
     for ( i = 0; i < argc; i++ )
     {
+        // Pass if do not have a column name or if it is the rows' IDs
+        if ( (col_name[i] == NULL) ||  (strcmp(col_name[i], "idraws") == 0) ||
+             (strcmp(col_name[i], "iddevices") == 0) )
+        {
+            continue;
+        }
+
         fprintf(stdout, "%s: %s\t", col_name[i], (argv[i]) ? argv[i] : NULL);
     }
 
@@ -96,16 +102,26 @@ static int callback_json(void   *data,
     {
         json_object     *value = NULL;
 
+        // Pass if do not have a column name
+        if ( col_name[i] == NULL )
+        {
+            continue;
+        }
 
-        // Fill the JSON object
         if ( argv[i] == NULL )
         {
             json_object_object_add(jobj, col_name[i], NULL);
             continue;
         }
 
+        // We do not give the ids
+        if ((strcmp(col_name[i], "idraws") == 0) || (strcmp(col_name[i], "iddevices") == 0))
+        {
+            continue;
+        }
 
-        // In function of the key, we create a speficic JSON object type
+
+        // Fill the JSON object in function of the key, we create a speficic JSON object type
         if ( (strcmp(col_name[i], "idraws") == 0) || (strcmp(col_name[i], "time") == 0) ||
              (strcmp(col_name[i], "lat") == 0) || (strcmp(col_name[i], "lon") == 0) ||
              (strcmp(col_name[i], "seqNumber") == 0) || (strcmp(col_name[i], "iddevices") == 0) ||
