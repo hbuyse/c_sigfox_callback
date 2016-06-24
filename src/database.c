@@ -52,10 +52,11 @@ static int callback_raw(void    *data __attribute__( (unused) ),
 {
     int     i = 0;
 
+
     for ( i = 0; i < argc; i++ )
     {
         // Pass if do not have a column name or if it is the rows' IDs
-        if ( (col_name[i] == NULL) ||  (strcmp(col_name[i], "idraws") == 0) ||
+        if ( (col_name[i] == NULL) || (strcmp(col_name[i], "idraws") == 0) ||
              (strcmp(col_name[i], "iddevices") == 0) )
         {
             continue;
@@ -102,6 +103,7 @@ static int callback_json(void   *data,
     {
         json_object     *value = NULL;
 
+
         // Pass if do not have a column name
         if ( col_name[i] == NULL )
         {
@@ -114,8 +116,9 @@ static int callback_json(void   *data,
             continue;
         }
 
+
         // We do not give the ids
-        if ((strcmp(col_name[i], "idraws") == 0) || (strcmp(col_name[i], "iddevices") == 0))
+        if ( (strcmp(col_name[i], "idraws") == 0) || (strcmp(col_name[i], "iddevices") == 0) )
         {
             continue;
         }
