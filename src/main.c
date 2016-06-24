@@ -15,14 +15,14 @@ int main(void)
     sqlite3             *db     = NULL;
     json_object         *jarray = NULL;
 
-    sigfox_device_t     device  =
+    sigfox_device_t     device __attribute__( (unused) )    =
     {
         .id_modem               = "12FED",
         .attribution            = 0,
         .timestamp_attribution  = 0
     };
 
-    sigfox_raws_t       raw     =
+    sigfox_raws_t       raw __attribute__( (unused) )       =
     {
         .timestamp  = time(NULL),
         .id_modem   = "12FED",
@@ -48,11 +48,11 @@ int main(void)
 
 
     // Add a device into the list
-    sigfox_insert_devices(&db, device);
+    // sigfox_insert_devices(&db, device);
 
 
     // Add a raw structure into the list
-    sigfox_insert_raws(&db, raw);
+    // sigfox_insert_raws(&db, raw);
 
 
     // Print devices
