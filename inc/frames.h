@@ -41,7 +41,7 @@ struct sigfox_raws_s {
                           // null.
     unsigned int seq_number;          ///< the sequence number of the message if available
     unsigned char ack;          ///< true if this message needs to be acknowledged, false else
-    unsigned char long_polling;  ///< longPolling : 'true' or 'false'
+    unsigned char long_polling;          ///< longPolling : 'true' or 'false'
 };
 
 

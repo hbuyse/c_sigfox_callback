@@ -174,7 +174,7 @@ unsigned char sigfox_create_tables(sqlite3      **db,
                                    const char   *sql_script_path
                                    )
 {
-    int         rc = 0;
+    int         rc                  = 0;
     char        *sqlite3_error_msg  = NULL;
 
 
@@ -197,6 +197,7 @@ unsigned char sigfox_create_tables(sqlite3      **db,
         return (1);
     }
 
+
     // Get the size of the SQL script
     fseek(sql_script, 0, SEEK_END);
     file_size   = ftell(sql_script);
@@ -214,8 +215,9 @@ unsigned char sigfox_create_tables(sqlite3      **db,
         return (2);
     }
 
+
     // Execute SQL statement
-    rc          = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
+    rc = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
 
     if ( rc != SQLITE_OK )
     {
@@ -294,7 +296,7 @@ unsigned char sigfox_insert_raws(sqlite3                **db,
     char                sql[BUFFER_MAX_LENGTH];
 
 
-    sprintf(sql, INSERT_RAWS, raws.timestamp, raws.id_modem, raws.snr, raws.station, raws.ack, raws.data, 
+    sprintf(sql, INSERT_RAWS, raws.timestamp, raws.id_modem, raws.snr, raws.station, raws.ack, raws.data,
             raws.duplicate, raws.avg_snr, raws.rssi, raws.latitude, raws.longitude, raws.seq_number);
 
 
@@ -400,6 +402,7 @@ unsigned char sigfox_delete_db(sqlite3      **db,
         return (1);
     }
 
+
     // Get the size of the SQL script
     fseek(sql_script, 0, SEEK_END);
     file_size   = ftell(sql_script);
@@ -417,8 +420,9 @@ unsigned char sigfox_delete_db(sqlite3      **db,
         return (2);
     }
 
+
     // Execute SQL statement
-    rc          = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
+    rc = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
 
     if ( rc != SQLITE_OK )
     {
