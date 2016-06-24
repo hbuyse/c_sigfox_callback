@@ -14,24 +14,13 @@
 #include <json/json.h>          // json_object
 
 #include <frames.h>
+#include <sqls.h>       // CREATE_SIGFOX_TABLES, DROP_SIGFOX_TABLES, SELECT_RAWS, SELECT_DEVICES, INSERT_RAWS, INSERT_DEVICES
 
 
 /**
  * \brief Maximum length of a buffer
  */
 #define BUFFER_MAX_LENGTH 4096
-
-
-/**
- * \brief SQL command to insert data from a sigfox_device_t to the database
- */
-#define INSERT_DEVICES "INSERT INTO `devices` VALUES (NULL, '%s', %d, %d);"
-
-
-/**
- * \brief SQL command to insert data from a sigfox_raws_t to the database
- */
-#define INSERT_RAWS "INSERT INTO `raws` VALUES (NULL, %ld, '%s', %.2f, '%s', %u, '%s', %u, %.2f, %.2f, %u, %u, %u);"
 
 
 /**
@@ -189,54 +178,14 @@ unsigned char sigfox_open_db(sqlite3    **db,
 
 
 
-unsigned char sigfox_create_tables(sqlite3      **db,
-                                   const char   *sql_script_path
-                                   )
+unsigned char sigfox_create_tables(sqlite3 **db)
 {
     int         rc                  = 0;
     char        *sqlite3_error_msg  = NULL;
 
 
-    // Script SQL
-    FILE        *sql_script         = NULL;
-    size_t      file_size           = 0;
-    char        *sql                = NULL;
-    size_t      read                = 0;
-
-
-    sql_script = (sql_script_path != NULL) ? fopen(sql_script_path, "r") : fopen("./sqls/create_tables.sql", "r");
-
-    if ( ! sql_script )
-    {
-        fprintf(stderr,
-                "[%s] Can not open the file %s\n",
-                __func__,
-                (sql_script_path) ? sql_script_path : "./sqls/create_tables.sql");
-
-        return (1);
-    }
-
-
-    // Get the size of the SQL script
-    fseek(sql_script, 0, SEEK_END);
-    file_size   = ftell(sql_script);
-    fseek(sql_script, 0, SEEK_SET);
-
-
-    // Create SQL statement
-    sql         = (char *) calloc(file_size + 1, sizeof(char) );
-    read        = fread(sql, sizeof(char), file_size, sql_script);
-
-    if ( read != file_size )
-    {
-        fprintf(stderr, "[%s] read != file_size\n", __func__);
-
-        return (2);
-    }
-
-
     // Execute SQL statement
-    rc = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
+    rc = sqlite3_exec(*db, CREATE_SIGFOX_TABLES, NULL, NULL, &sqlite3_error_msg);
 
     if ( rc != SQLITE_OK )
     {
@@ -353,11 +302,9 @@ json_object* sigfox_select_raws(sqlite3 **db)
     // Create the JSON array
     jarray  = json_object_new_array();
 
-    char     sql[]          = "SELECT * from `raws`";
-
 
     // Execute SQL statement
-    rc      = sqlite3_exec(*db, sql, callback_json, (void *) jarray, &sqlite3_error_msg);
+    rc      = sqlite3_exec(*db, SELECT_RAWS, callback_json, (void *) jarray, &sqlite3_error_msg);
 
     if ( rc != SQLITE_OK )
     {
@@ -380,11 +327,9 @@ json_object* sigfox_select_devices(sqlite3 **db)
     // Create the JSON array
     jarray  = json_object_new_array();
 
-    char     sql[]          = "SELECT * from `devices`";
-
 
     // Execute SQL statement
-    rc      = sqlite3_exec(*db, sql, callback_json, (void *) jarray, &sqlite3_error_msg);
+    rc      = sqlite3_exec(*db, SELECT_DEVICES, callback_json, (void *) jarray, &sqlite3_error_msg);
 
     if ( rc != SQLITE_OK )
     {
@@ -397,51 +342,14 @@ json_object* sigfox_select_devices(sqlite3 **db)
 
 
 
-unsigned char sigfox_delete_db(sqlite3      **db,
-                               const char   *sql_script_path
-                               )
+unsigned char sigfox_delete_db(sqlite3 **db)
 {
     int         rc                  = 0;
     char        *sqlite3_error_msg  = NULL;
 
 
-    // Script SQL
-    FILE        *sql_script         = NULL;
-    size_t      file_size           = 0;
-    char        *sql                = NULL;
-    size_t      read                = 0;
-
-
-    sql_script = (sql_script_path != NULL) ? fopen(sql_script_path, "r") : fopen("./sqls/delete_tables.sql", "r");
-
-    if ( ! sql_script )
-    {
-        fprintf(stderr, "Can not open the file %s\n", (sql_script_path) ? sql_script_path : "./sqls/delete_tables.sql");
-
-        return (1);
-    }
-
-
-    // Get the size of the SQL script
-    fseek(sql_script, 0, SEEK_END);
-    file_size   = ftell(sql_script);
-    fseek(sql_script, 0, SEEK_SET);
-
-
-    // Create SQL statement
-    sql         = (char *) calloc(file_size + 1, sizeof(char) );
-    read        = fread(sql, sizeof(char), file_size, sql_script);
-
-    if ( read != file_size )
-    {
-        fprintf(stderr, "read != file_size\n");
-
-        return (2);
-    }
-
-
     // Execute SQL statement
-    rc = sqlite3_exec(*db, sql, NULL, NULL, &sqlite3_error_msg);
+    rc = sqlite3_exec(*db, DROP_SIGFOX_TABLES, NULL, NULL, &sqlite3_error_msg);
 
     if ( rc != SQLITE_OK )
     {

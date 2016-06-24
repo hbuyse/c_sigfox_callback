@@ -33,11 +33,10 @@ unsigned char sigfox_open_db(sqlite3 **db, const char *db_name);
  * \brief      Creates tables into the sqlite database
  *
  * \param      db               The database
- * \param[in]  sql_script_path  Path to the sql script that creates the tables
  *
  * \return     0: no error / other: error
  */
-unsigned char sigfox_create_tables(sqlite3 **db, const char *sql_script_path);
+unsigned char sigfox_create_tables(sqlite3 **db);
 
 
 /**
@@ -86,11 +85,10 @@ json_object* sigfox_select_devices(sqlite3 **db);
  * \brief      Delete tables from the sqlite database
  *
  * \param      db               The database
- * \param[in]  sql_script_path  Path to the sql script that deletes the tables
  *
  * \return     0: no error / other: error
  */
-unsigned char sigfox_delete_db(sqlite3 **db, const char *sql_script_path);
+unsigned char sigfox_delete_db(sqlite3 **db);
 
 
 #ifdef     __cplusplus

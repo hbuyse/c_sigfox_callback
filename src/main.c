@@ -44,7 +44,7 @@ int main(void)
 
 
     // Creation of the tables
-    sigfox_create_tables(&db, NULL);
+    sigfox_create_tables(&db);
 
 
     // Add a device into the list
@@ -74,7 +74,7 @@ int main(void)
 
 
     // Delete tables
-    // sigfox_delete_db(&db, NULL);
+    // sigfox_delete_db(&db);
 
     return (0);
 }

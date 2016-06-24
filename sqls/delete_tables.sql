@@ -1,6 +1,0 @@
--- CREATION OF THE SIGFOX TABLES WITH SOME DATA
-
--- Delete the tables if they exists
-DROP TABLE IF EXISTS `raws`;
-DROP TABLE IF EXISTS `events`;
-DROP TABLE IF EXISTS `devices`;
