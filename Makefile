@@ -28,7 +28,7 @@ $(shell mkdir -p $(DIR_SRC) $(DIR_OBJ) $(DIR_DEP))
 
 
 CFLAGS  += -W -Wall -Wextra -Wno-unused-function -fmessage-length=0 -D_REENTRANT -I $(DIR_INC) $(shell pkg-config --cflags json-c)
-LDFLAGS += -lfcgi -lsqlite3
+LDFLAGS += -lfcgi -lsqlite3 $(shell pkg-config --libs json-c)
 
 
 SRC      = $(shell find $(DIR_SRC) -name '*.c' | sort)
