@@ -62,9 +62,23 @@ unsigned char sigfox_insert_devices(sqlite3 **db, const sigfox_device_t device);
 unsigned char sigfox_insert_raws(sqlite3 **db, const sigfox_raws_t raws);
 
 
+/**
+ * \brief      Get a JSON array of the raws table
+ *
+ * \param      db    The database
+ *
+ * \return     The JSON array
+ */
 json_object* sigfox_select_raws(sqlite3 **db);
 
 
+/**
+ * \brief      Get a JSON array of the devices table
+ *
+ * \param      db    The database
+ *
+ * \return     The JSON array
+ */
 json_object* sigfox_select_devices(sqlite3 **db);
 
 
