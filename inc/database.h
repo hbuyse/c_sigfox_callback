@@ -18,6 +18,16 @@ extern "C" {
 
 
 /**
+ * \brief      Fill a raws structure from a JSON.
+ *
+ * \param[in]  jobj  The jobj
+ *
+ * \return     The raws structure
+ */
+sigfox_raws_t sigfox_raws_from_json(const json_object *jobj);
+
+
+/**
  * \brief      Open a sqlite database
  * \details    Default name for the sqlite database is "sigfox.db"
  *

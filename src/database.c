@@ -14,7 +14,7 @@
 #include <json/json.h>          // json_object
 
 #include <frames.h>
-#include <sqls.h>       // CREATE_SIGFOX_TABLES, DROP_SIGFOX_TABLES, SELECT_RAWS, SELECT_DEVICES, INSERT_RAWS, INSERT_DEVICES
+#include <sqls.h>          // CREATE_SIGFOX_TABLES, DROP_SIGFOX_TABLES, SELECT_RAWS, SELECT_DEVICES, INSERT_RAWS, INSERT_DEVICES
 
 
 /**
@@ -45,8 +45,8 @@ static int callback_raw(void    *data __attribute__( (unused) ),
     for ( i = 0; i < argc; i++ )
     {
         // Pass if do not have a column name or if it is the rows' IDs
-        if ( (col_name[i] == NULL) || (strcmp(col_name[i], "idraws") == 0) ||
-             (strcmp(col_name[i], "iddevices") == 0) )
+        if ( (col_name[i] == NULL) || (strcmp(col_name[i], SQL_COL_ID_RAWS) == 0) ||
+             (strcmp(col_name[i], SQL_COL_ID_MODEM) == 0) )
         {
             continue;
         }
@@ -107,27 +107,26 @@ static int callback_json(void   *data,
 
 
         // We do not give the ids
-        if ( (strcmp(col_name[i], "idraws") == 0) || (strcmp(col_name[i], "iddevices") == 0) )
+        if ( (strcmp(col_name[i], SQL_COL_ID_RAWS) == 0) )
         {
             continue;
         }
 
 
         // Fill the JSON object in function of the key, we create a speficic JSON object type
-        if ( (strcmp(col_name[i], "idraws") == 0) || (strcmp(col_name[i], "time") == 0) ||
-             (strcmp(col_name[i], "lat") == 0) || (strcmp(col_name[i], "lon") == 0) ||
-             (strcmp(col_name[i], "seqNumber") == 0) || (strcmp(col_name[i], "iddevices") == 0) ||
-             (strcmp(col_name[i], "attribution") == 0) || (strcmp(col_name[i], "timestamp_attribution") == 0) )
+        if ( (strcmp(col_name[i], SQL_COL_TIMESTAMP) == 0) || (strcmp(col_name[i], SQL_COL_LATITUDE) == 0) ||
+             (strcmp(col_name[i], SQL_COL_LONGITUDE) == 0) || (strcmp(col_name[i], SQL_COL_SEQ_NUMBER) == 0) ||
+             (strcmp(col_name[i], SQL_COL_ATTRIBUTION) == 0) ||
+             (strcmp(col_name[i], SQL_COL_TIMESTAMP_ATTRIBUTION) == 0) )
         {
             value = json_object_new_int(atoi(argv[i]) );
         }
-        else if ( (strcmp(col_name[i], "ack") == 0) || (strcmp(col_name[i], "duplicate") == 0) )
+        else if ( (strcmp(col_name[i], SQL_COL_ACK) == 0) || (strcmp(col_name[i], SQL_COL_DUPLICATE) == 0) )
         {
-            // fprintf(stdout, "Find %s", argv[i]);
             value = json_object_new_boolean(atoi(argv[i]) );
         }
-        else if ( (strcmp(col_name[i], "snr") == 0) || (strcmp(col_name[i], "avgSignal") == 0) ||
-                  (strcmp(col_name[i], "rssi") == 0) )
+        else if ( (strcmp(col_name[i], SQL_COL_SNR) == 0) || (strcmp(col_name[i], SQL_COL_AVG_SIGNAL) == 0) ||
+                  (strcmp(col_name[i], SQL_COL_RSSI) == 0) )
         {
             value = json_object_new_double(atof(argv[i]) );
         }
@@ -144,6 +143,91 @@ static int callback_json(void   *data,
     json_object_array_add(jarray, jobj);
 
     return (0);
+}
+
+
+
+sigfox_raws_t sigfox_raws_from_json(const json_object *jobj)
+{
+    sigfox_raws_t       raws;
+    json_object         *tmp = NULL;
+
+
+    // Clear the structure.
+    memset(&raws, 0, sizeof(sigfox_raws_t) );
+
+
+    // Get the timestamp
+    if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_TIMESTAMP, &tmp) )
+    {
+        raws.timestamp = json_object_get_int(tmp);
+    }
+
+
+    // Get the modem identification
+    if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_ID_MODEM, &tmp) )
+    {
+        const char     *id_modem = json_object_get_string(tmp);
+        memcpy(&raws.id_modem, id_modem, SIGFOX_DEVICE_LENGTH);
+    }
+
+
+    // Get the latitude
+    if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_LATITUDE, &tmp) )
+    {
+        raws.latitude = json_object_get_int(tmp);
+    }
+
+
+    // Get the longitude
+    if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_LONGITUDE, &tmp) )
+    {
+        raws.longitude = json_object_get_int(tmp);
+    }
+
+
+    // Get the sequence number
+    if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_SEQ_NUMBER, &tmp) )
+    {
+        raws.seq_number = json_object_get_int(tmp);
+    }
+
+
+    // Get the acknowledge variable
+    if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_ACK, &tmp) )
+    {
+        raws.ack = json_object_get_boolean(tmp);
+    }
+
+
+    // Get the duplicate variable
+    if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_DUPLICATE, &tmp) )
+    {
+        raws.duplicate = json_object_get_boolean(tmp);
+    }
+
+
+    // Get the signal variable
+    if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_SNR, &tmp) )
+    {
+        raws.snr = json_object_get_double(tmp);
+    }
+
+
+    // Get the average signal variable
+    if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_AVG_SIGNAL, &tmp) )
+    {
+        raws.avg_signal = json_object_get_double(tmp);
+    }
+
+
+    // Get the RSSI
+    if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_RSSI, &tmp) )
+    {
+        raws.rssi = json_object_get_double(tmp);
+    }
+
+    return (raws);
 }
 
 
@@ -180,8 +264,8 @@ unsigned char sigfox_open_db(sqlite3    **db,
 
 unsigned char sigfox_create_tables(sqlite3 **db)
 {
-    int         rc                  = 0;
-    char        *sqlite3_error_msg  = NULL;
+    int         rc = 0;
+    char        *sqlite3_error_msg = NULL;
 
 
     // Execute SQL statement
@@ -265,7 +349,7 @@ unsigned char sigfox_insert_raws(sqlite3                **db,
 
 
     sprintf(sql, INSERT_RAWS, raws.timestamp, raws.id_modem, raws.snr, raws.station, raws.ack, raws.data,
-            raws.duplicate, raws.avg_snr, raws.rssi, raws.latitude, raws.longitude, raws.seq_number);
+            raws.duplicate, raws.avg_signal, raws.rssi, raws.latitude, raws.longitude, raws.seq_number);
 
 
     // Execute SQL statement
@@ -344,8 +428,8 @@ json_object* sigfox_select_devices(sqlite3 **db)
 
 unsigned char sigfox_delete_db(sqlite3 **db)
 {
-    int         rc                  = 0;
-    char        *sqlite3_error_msg  = NULL;
+    int         rc = 0;
+    char        *sqlite3_error_msg = NULL;
 
 
     // Execute SQL statement

@@ -10,19 +10,23 @@
 
 #include <database.h>          // sigfox_open_db
 
+const sigfox_device_t     devices[] =
+{
+    {.id_modem = "12FED", .attribution = 0, .timestamp_attribution = 0},
+    {.id_modem = "12FEE", .attribution = 0, .timestamp_attribution = 0},
+    {.id_modem = "12FEF", .attribution = 0, .timestamp_attribution = 0},
+    {.id_modem = "12FF0", .attribution = 0, .timestamp_attribution = 0},
+};
+
+
 int main(void)
 {
-    sqlite3             *db     = NULL;
-    json_object         *jarray = NULL;
+    sqlite3             *db         = NULL;
+    json_object         *jarray     = NULL;
+    unsigned char       i           = 0;
+    unsigned char       devices_len = 0;
 
-    sigfox_device_t     device __attribute__( (unused) )    =
-    {
-        .id_modem               = "12FED",
-        .attribution            = 0,
-        .timestamp_attribution  = 0
-    };
-
-    sigfox_raws_t       raw __attribute__( (unused) )       =
+    sigfox_raws_t       raw __attribute__( (unused) ) =
     {
         .timestamp  = time(NULL),
         .id_modem   = "12FED",
@@ -31,7 +35,7 @@ int main(void)
         .ack        = 0,
         .data       = "16f000000000000000000000",
         .duplicate  = 0,
-        .avg_snr    = 0,
+        .avg_signal = 0,
         .rssi       = 0,
         .latitude   = 0,
         .longitude  = 0,
@@ -48,7 +52,12 @@ int main(void)
 
 
     // Add a device into the list
-    // sigfox_insert_devices(&db, device);
+    devices_len = sizeof(devices) / sizeof(devices[0]);
+
+    for ( i = 0; i < devices_len; ++i )
+    {
+        sigfox_insert_devices(&db, devices[i]);
+    }
 
 
     // Add a raw structure into the list

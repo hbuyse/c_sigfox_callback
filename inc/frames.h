@@ -33,8 +33,9 @@ struct sigfox_raws_s {
     double snr;          ///< the signal to noise ratio (in dB – Float value with two maximum fraction digits)
     unsigned char station[SIGFOX_STATION_LENGTH + 1];          ///< the base station identifier (in hexadecimal – 4 characters <=> 2 bytes)
     unsigned char data[SIGFOX_DATA_LENGTH + 1];          ///< the user data (in hexadecimal)
-    double avg_snr;          ///< the average signal to noise ratio computed from the last 25 messages (in dB – Float value with two maximum fraction
-                             ///< digits) or «N/A». The device must have send at least 15 messages.
+    double avg_signal;          ///< the average signal to noise ratio computed from the last 25 messages (in dB – Float value with two maximum
+                                // fraction
+                                ///< digits) or «N/A». The device must have send at least 15 messages.
     unsigned char latitude;          ///< the latitude, rounded to the nearest integer, of the base station which received the message
     unsigned char longitude;          ///< the longitude, rounded to the nearest integer, of the base station which received the message
     double rssi;          ///< the RSSI (in dBm – Float value with two maximum fraction digits). If there is no data to be returned, then the value is
