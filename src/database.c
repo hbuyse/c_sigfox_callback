@@ -147,20 +147,19 @@ static int callback_json(void   *data,
 
 
 
-sigfox_raws_t sigfox_raws_from_json(const json_object *jobj)
+void sigfox_raws_from_json(sigfox_raws_t* raws, const json_object *jobj)
 {
-    sigfox_raws_t       raws;
     json_object         *tmp = NULL;
 
 
     // Clear the structure.
-    memset(&raws, 0, sizeof(sigfox_raws_t) );
+    memset(raws, 0, sizeof(sigfox_raws_t) );
 
 
     // Get the timestamp
     if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_TIMESTAMP, &tmp) )
     {
-        raws.timestamp = json_object_get_int(tmp);
+        raws->timestamp = json_object_get_int(tmp);
     }
 
 
@@ -168,66 +167,64 @@ sigfox_raws_t sigfox_raws_from_json(const json_object *jobj)
     if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_ID_MODEM, &tmp) )
     {
         const char     *id_modem = json_object_get_string(tmp);
-        memcpy(&raws.id_modem, id_modem, SIGFOX_DEVICE_LENGTH);
+        memcpy(&(raws->id_modem), id_modem, SIGFOX_DEVICE_LENGTH);
     }
 
 
     // Get the latitude
     if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_LATITUDE, &tmp) )
     {
-        raws.latitude = json_object_get_int(tmp);
+        raws->latitude = json_object_get_int(tmp);
     }
 
 
     // Get the longitude
     if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_LONGITUDE, &tmp) )
     {
-        raws.longitude = json_object_get_int(tmp);
+        raws->longitude = json_object_get_int(tmp);
     }
 
 
     // Get the sequence number
     if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_SEQ_NUMBER, &tmp) )
     {
-        raws.seq_number = json_object_get_int(tmp);
+        raws->seq_number = json_object_get_int(tmp);
     }
 
 
     // Get the acknowledge variable
     if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_ACK, &tmp) )
     {
-        raws.ack = json_object_get_boolean(tmp);
+        raws->ack = json_object_get_boolean(tmp);
     }
 
 
     // Get the duplicate variable
     if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_DUPLICATE, &tmp) )
     {
-        raws.duplicate = json_object_get_boolean(tmp);
+        raws->duplicate = json_object_get_boolean(tmp);
     }
 
 
     // Get the signal variable
     if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_SNR, &tmp) )
     {
-        raws.snr = json_object_get_double(tmp);
+        raws->snr = json_object_get_double(tmp);
     }
 
 
     // Get the average signal variable
     if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_AVG_SIGNAL, &tmp) )
     {
-        raws.avg_signal = json_object_get_double(tmp);
+        raws->avg_signal = json_object_get_double(tmp);
     }
 
 
     // Get the RSSI
     if ( json_object_object_get_ex( (json_object *) jobj, SQL_COL_RSSI, &tmp) )
     {
-        raws.rssi = json_object_get_double(tmp);
+        raws->rssi = json_object_get_double(tmp);
     }
-
-    return (raws);
 }
 
 

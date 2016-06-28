@@ -20,11 +20,10 @@ extern "C" {
 /**
  * \brief      Fill a raws structure from a JSON.
  *
- * \param[in]  jobj  The jobj
- *
- * \return     The raws structure
+ * \param      raws  The raws structure
+ * \param[in]  jobj  The JSON object
  */
-sigfox_raws_t sigfox_raws_from_json(const json_object *jobj);
+void sigfox_raws_from_json(sigfox_raws_t* raws, const json_object *jobj);
 
 
 /**
