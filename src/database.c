@@ -147,6 +147,12 @@ static int callback_json(void   *data,
 
 
 
+/**
+ * \brief           Convert a data string to an hexadecimal array
+ *
+ * \param[in]       data_str  The data as string
+ * \param[out]      data_hex  The data as hexadecimal
+ */
 static void convert_data_str_to_data_hex(const unsigned char    data_str[SIGFOX_DATA_STR_LENGTH + 1],
                                          unsigned char          data_hex[SIGFOX_DATA_LENGTH]
                                          )

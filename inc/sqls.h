@@ -30,6 +30,9 @@ extern "C" {
 #define SQL_COL_RSSI "rssi"
 
 
+/**
+ * \brief SQL command to create the 'raws' and 'devices' tables in the database
+ */
 #define CREATE_SIGFOX_TABLES \
     "-- CREATION OF THE SIGFOX TABLES WITH SOME DATA\n" \
     "\n" \
@@ -64,6 +67,9 @@ extern "C" {
     ");"
 
 
+/**
+ * \brief SQL command to drop 'raws' and 'devices' tables
+ */
 #define DROP_SIGFOX_TABLES \
     "-- CREATION OF THE SIGFOX TABLES WITH SOME DATA\n" \
     "\n" \
@@ -72,7 +78,15 @@ extern "C" {
     "DROP TABLE IF EXISTS `devices`;"
 
 
+/**
+ * \brief SQL command to select all the colums in the 'raws' table
+ */
 #define SELECT_RAWS "SELECT * FROM `raws`"
+
+
+/**
+ * \brief SQL command to select all the colums in the 'devices' table
+ */
 #define SELECT_DEVICES "SELECT * FROM `devices`"
 
 
