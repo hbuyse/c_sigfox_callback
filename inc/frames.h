@@ -16,7 +16,8 @@
 extern "C" {
 #endif
 
-#define SIGFOX_DATA_LENGTH 24
+#define SIGFOX_DATA_STR_LENGTH 24
+#define SIGFOX_DATA_LENGTH 12
 #define SIGFOX_STATION_LENGTH 4
 #define SIGFOX_DEVICE_LENGTH 8
 
@@ -32,7 +33,8 @@ struct sigfox_raws_s {
                                       ///< duplicate» box in the callback configuration page
     double snr;          ///< the signal to noise ratio (in dB – Float value with two maximum fraction digits)
     unsigned char station[SIGFOX_STATION_LENGTH + 1];          ///< the base station identifier (in hexadecimal – 4 characters <=> 2 bytes)
-    unsigned char data[SIGFOX_DATA_LENGTH + 1];          ///< the user data (in hexadecimal)
+    unsigned char data_str[SIGFOX_DATA_STR_LENGTH + 1];          ///< the user data (in string)
+    unsigned char data_hex[SIGFOX_DATA_LENGTH];          ///< the user data (in hexadecimal)
     double avg_signal;          ///< the average signal to noise ratio computed from the last 25 messages (in dB – Float value with two maximum
                                 // fraction
                                 ///< digits) or «N/A». The device must have send at least 15 messages.

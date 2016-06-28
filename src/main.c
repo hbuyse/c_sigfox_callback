@@ -33,7 +33,8 @@ int main(void)
         .snr        = 0,
         .station    = "E4FA",
         .ack        = 0,
-        .data       = "16f000000000000000000000",
+        .data_str   = "16f000000000000000000000",
+        .data_hex   = {0},
         .duplicate  = 0,
         .avg_signal = 0,
         .rssi       = 0,
@@ -41,7 +42,6 @@ int main(void)
         .longitude  = 0,
         .seq_number = 0
     };
-
 
     // Creation of the database
     sigfox_open_db(&db, "sigfox.db");
@@ -61,7 +61,7 @@ int main(void)
 
 
     // Add a raw structure into the list
-    // sigfox_insert_raws(&db, raw);
+    sigfox_insert_raws(&db, raw);
 
 
     // Print devices

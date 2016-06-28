@@ -23,7 +23,7 @@ extern "C" {
  * \param      raws  The raws structure
  * \param[in]  jobj  The JSON object
  */
-void sigfox_raws_from_json(sigfox_raws_t* raws, const json_object *jobj);
+void sigfox_raws_from_json(sigfox_raws_t *raws, const json_object *jobj);
 
 
 /**
@@ -67,7 +67,7 @@ unsigned char sigfox_insert_devices(sqlite3 **db, const sigfox_device_t device);
  *
  * \return     0: no error / other: error
  */
-unsigned char sigfox_insert_raws(sqlite3 **db, const sigfox_raws_t raws);
+unsigned char sigfox_insert_raws(sqlite3 **db, sigfox_raws_t raws);
 
 
 /**

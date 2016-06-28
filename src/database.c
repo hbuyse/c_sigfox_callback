@@ -147,9 +147,33 @@ static int callback_json(void   *data,
 
 
 
-void sigfox_raws_from_json(sigfox_raws_t* raws, const json_object *jobj)
+static void convert_data_str_to_data_hex(const unsigned char    data_str[SIGFOX_DATA_STR_LENGTH + 1],
+                                         unsigned char          data_hex[SIGFOX_DATA_LENGTH]
+                                         )
 {
-    json_object         *tmp = NULL;
+    unsigned char       i   = 0;
+    unsigned char       j   = 0;
+    size_t              len = 0;
+
+
+    // Get the length of the string
+    len = strlen( (const char *) data_str);
+
+    for ( i = 0, j = 0; i < len; i += 2, ++j )
+    {
+        unsigned char     s[] = {data_str[i], data_str[i + 1], 0};
+
+        data_hex[j] = (unsigned char) strtol( (const char *) s, NULL, 0);
+    }
+}
+
+
+
+void sigfox_raws_from_json(sigfox_raws_t        *raws,
+                           const json_object    *jobj
+                           )
+{
+    json_object     *tmp = NULL;
 
 
     // Clear the structure.
@@ -336,7 +360,7 @@ unsigned char sigfox_insert_devices(sqlite3                 **db,
 
 
 unsigned char sigfox_insert_raws(sqlite3                **db,
-                                 const sigfox_raws_t    raws
+                                 sigfox_raws_t    raws
                                  )
 {
     unsigned char       res = 0;
@@ -344,8 +368,10 @@ unsigned char sigfox_insert_raws(sqlite3                **db,
     char                *sqlite3_error_msg = NULL;
     char                sql[BUFFER_MAX_LENGTH];
 
+    // Convert string datas to hex datas
+    convert_data_str_to_data_hex(raws.data_str, raws.data_hex);
 
-    sprintf(sql, INSERT_RAWS, raws.timestamp, raws.id_modem, raws.snr, raws.station, raws.ack, raws.data,
+    sprintf(sql, INSERT_RAWS, raws.timestamp, raws.id_modem, raws.snr, raws.station, raws.ack, raws.data_str,
             raws.duplicate, raws.avg_signal, raws.rssi, raws.latitude, raws.longitude, raws.seq_number);
 
 
@@ -356,7 +382,7 @@ unsigned char sigfox_insert_raws(sqlite3                **db,
     {
         case SQLITE_OK:
 #ifdef __DEBUG__
-            fprintf(stdout, "[%s] Raw %s inserted into raws table\n", __func__, raws.data);
+            fprintf(stdout, "[%s] Raw %s inserted into raws table\n", __func__, raws.data_str);
 #endif
             res = 0;
             break;

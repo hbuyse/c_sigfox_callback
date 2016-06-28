@@ -43,13 +43,14 @@ extern "C" {
     "  `snr` REAL NOT NULL,\n" \
     "  `station` TEXT NOT NULL,\n" \
     "  `ack` integer,\n" \
-    "  `data` TEXT NOT NULL,\n" \
+    "  `data_str` TEXT NOT NULL,\n" \
+    "  `data_hex` BLOB NOT NULL,\n" \
     "  `duplicate` INTEGER NOT NULL,\n" \
     "  `avg_signal` REAL NOT NULL,\n" \
     "  `rssi` REAL NOT NULL,\n" \
     "  `latitude` INTEGER NOT NULL,\n" \
     "  `longitude` INTEGER NOT NULL,\n" \
-    "  `seqNumber` INTEGER NOT NULL\n" \
+    "  `seq_number` INTEGER NOT NULL\n" \
     ");\n" \
     "\n" \
     "\n" \
@@ -84,7 +85,8 @@ extern "C" {
 /**
  * \brief SQL command to insert data from a sigfox_raws_t to the database
  */
-#define INSERT_RAWS "INSERT INTO `raws` VALUES (NULL, %ld, '%s', %.2f, '%s', %u, '%s', %u, %.2f, %.2f, %u, %u, %u);"
+#define INSERT_RAWS \
+    "INSERT INTO `raws` VALUES (NULL, %ld, '%s', %.2f, '%s', %u, '%s', '', %u, %.2f, %.2f, %u, %u, %u);"
 
 #ifdef     __cplusplus
 }
