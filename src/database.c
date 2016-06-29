@@ -13,7 +13,7 @@
 #include <time.h>          // time_t, struct tm, time, localtime, strftime
 #include <json/json.h>          // json_object
 
-#include <logging.h>
+#include <logging.h>        // gprintf, eprintf, cprintf
 #include <frames.h>
 #include <sqls.h>          // CREATE_SIGFOX_TABLES, DROP_SIGFOX_TABLES, SELECT_RAWS, SELECT_DEVICES, INSERT_RAWS, INSERT_DEVICES
 
@@ -385,13 +385,13 @@ unsigned char sigfox_insert_devices(sqlite3                 **db,
                     device.id_modem,
                     sqlite3_error_msg);
             sqlite3_free(sqlite3_error_msg);
-            res = 2;
+            res = 1;
             break;
 
         default:
             eprintf("SQL error (%d): %s\n", rc, sqlite3_error_msg);
             sqlite3_free(sqlite3_error_msg);
-            res = 1;
+            res = 2;
             break;
     }
 

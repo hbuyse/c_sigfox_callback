@@ -54,7 +54,7 @@ unsigned char sigfox_create_tables(sqlite3 **db);
  * \param      db      The database
  * \param[in]  device  The device
  *
- * \return     0: no error / other: error
+ * \return     0: no error / 1: warning / 2: error
  */
 unsigned char sigfox_insert_devices(sqlite3 **db, const sigfox_device_t device);
 
