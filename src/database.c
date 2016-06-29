@@ -14,7 +14,7 @@
 #include <json/json.h>          // json_object
 
 #include <logging.h>        // gprintf, eprintf, cprintf
-#include <frames.h>
+#include <frames.h>         // sigfox_raws_t, sigfox_device_t
 #include <sqls.h>          // CREATE_SIGFOX_TABLES, DROP_SIGFOX_TABLES, SELECT_RAWS, SELECT_DEVICES, INSERT_RAWS, INSERT_DEVICES
 
 
