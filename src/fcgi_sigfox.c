@@ -108,7 +108,8 @@ void* fastcgi_thread_function(void *arg)
 
     while ( 1 )
     {
-        static pthread_mutex_t      accept_mutex    = PTHREAD_MUTEX_INITIALIZER;
+        static pthread_mutex_t      accept_mtx    = PTHREAD_MUTEX_INITIALIZER;
+        static pthread_mutex_t      sigfox_db_mtx    = PTHREAD_MUTEX_INITIALIZER;
         static uint64_t             request_nb      = 0;
         fcgi_request_t              req;
 
@@ -119,12 +120,12 @@ void* fastcgi_thread_function(void *arg)
 #endif
 
 
-        pthread_mutex_lock(&accept_mutex);          // Lock the mutex
+        pthread_mutex_lock(&accept_mtx);          // Lock the mutex
         rc = FCGX_Accept_r(&request);          // Accept a new request (multi-thread safe).
         request_fill(request, &req);          // Fill the request structure with the infos contained in the FCGX_Request
         int     r = ++request_nb; // Get the number of the request
         time(&rawtime);          // Get the time of the computer
-        pthread_mutex_unlock(&accept_mutex);          // Unlock the mutex
+        pthread_mutex_unlock(&accept_mtx);          // Unlock the mutex
 
         request_display(req, r);
 
@@ -177,7 +178,9 @@ void* fastcgi_thread_function(void *arg)
                 json_object         *jarray     = NULL;
                 
                 // Get the list of devices
+                pthread_mutex_lock(&sigfox_db_mtx);
                 jarray = sigfox_select_devices(&(thread_arg->sigfox_db));
+                pthread_mutex_unlock(&sigfox_db_mtx);
 
                 // Send back the datas
                 FCGX_FPrintF(request.out, "Content-type: application/json\r\n\r\n%s", json_object_to_json_string(jarray));
@@ -187,7 +190,9 @@ void* fastcgi_thread_function(void *arg)
                 json_object         *jarray     = NULL;
                 
                 // Get the list of devices
+                pthread_mutex_lock(&sigfox_db_mtx);
                 jarray = sigfox_select_raws(&(thread_arg->sigfox_db));
+                pthread_mutex_unlock(&sigfox_db_mtx);
 
                 // Send back the datas
                 FCGX_FPrintF(request.out, "Content-type: application/json\r\n\r\n%s", json_object_to_json_string(jarray));
