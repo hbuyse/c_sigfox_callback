@@ -70,7 +70,7 @@ extern "C" {
  * \brief SQL command to drop 'raws' and 'devices' tables
  */
 #define DROP_SIGFOX_TABLES \
-    "-- CREATION OF THE SIGFOX TABLES WITH SOME DATA\n" \
+    "-- DELETION OF THE SIGFOX TABLES\n" \
     "\n" \
     "-- Delete the tables if they exists\n" \
     "DROP TABLE IF EXISTS `raws`;\n" \
