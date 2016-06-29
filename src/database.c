@@ -401,14 +401,15 @@ unsigned char sigfox_insert_devices(sqlite3                 **db,
 
 
 
-unsigned char sigfox_insert_raws(sqlite3                **db,
-                                 sigfox_raws_t    raws
+unsigned char sigfox_insert_raws(sqlite3        **db,
+                                 sigfox_raws_t  raws
                                  )
 {
     unsigned char       res = 0;
     int                 rc  = 0;
     char                *sqlite3_error_msg = NULL;
     char                sql[BUFFER_MAX_LENGTH];
+
 
     // Convert string datas to hex datas
     convert_data_str_to_data_hex(raws.data_str, raws.data_hex);

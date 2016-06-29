@@ -15,19 +15,28 @@ extern "C" {
 #endif
 
 
-#define SQL_COL_ID_RAWS "id_raws"
-#define SQL_COL_ID_MODEM "id_modem"
-#define SQL_COL_TIMESTAMP "timestamp"
-#define SQL_COL_LATITUDE "latitude"
-#define SQL_COL_LONGITUDE "longitude"
-#define SQL_COL_SEQ_NUMBER "seq_number"
-#define SQL_COL_ATTRIBUTION "attribution"
-#define SQL_COL_TIMESTAMP_ATTRIBUTION "timestamp_attribution"
-#define SQL_COL_ACK "ack"
-#define SQL_COL_DUPLICATE "duplicate"
-#define SQL_COL_SNR "snr"
-#define SQL_COL_AVG_SIGNAL "avg_signal"
-#define SQL_COL_RSSI "rssi"
+/**
+ * \defgroup  Raws_col_name  Raws table column names
+ * @{
+ */
+#define SQL_COL_ID_RAWS "id_raws"          ///< ID raws column name
+#define SQL_COL_ID_MODEM "id_modem"          ///< ID modem column name
+#define SQL_COL_TIMESTAMP "timestamp"          ///< Timestamp column name
+#define SQL_COL_LATITUDE "latitude"          ///< Latitude column name
+#define SQL_COL_DATA_STR "data_str"          ///< Data string column name
+#define SQL_COL_DATA_HEX "data_hex"          ///< Hexadecimal data column name
+#define SQL_COL_LONGITUDE "longitude"          ///< Longitude column name
+#define SQL_COL_SEQ_NUMBER "seq_number"          ///< Sequence number column name
+#define SQL_COL_ATTRIBUTION "attribution"          ///< Attribution column name
+#define SQL_COL_TIMESTAMP_ATTRIBUTION "timestamp_attribution"          ///< Timestamp attribution column name
+#define SQL_COL_ACK "ack"          ///< Acknowledge column name
+#define SQL_COL_DUPLICATE "duplicate"          ///< Duplicate column name
+#define SQL_COL_SNR "snr"          ///< Signal column name
+#define SQL_COL_AVG_SIGNAL "avg_signal"          ///< Average signal column name
+#define SQL_COL_RSSI "rssi"          ///< RSSI column name
+
+
+/**@}*/
 
 
 /**

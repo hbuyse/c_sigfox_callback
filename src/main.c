@@ -10,6 +10,10 @@
 
 #include <database.h>          // sigfox_open_db
 
+
+/**
+ * \brief List of devices that the program follows
+ */
 const sigfox_device_t     devices[] =
 {
     {.id_modem = "12FED", .attribution = 0, .timestamp_attribution = 0},
@@ -42,6 +46,7 @@ int main(void)
         .longitude  = 0,
         .seq_number = 0
     };
+
 
     // Creation of the database
     sigfox_open_db(&db, "sigfox.db");
