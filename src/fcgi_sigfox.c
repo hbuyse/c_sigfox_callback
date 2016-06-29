@@ -14,9 +14,11 @@
 #include <string.h>          // memset, strstr
 #include <time.h>          // time_t, time
 #include <inttypes.h>
+#include <json/json.h>      // json_object
 
 #include <fcgi_sigfox.h>          // Thread_arg_t
-
+#include <logging.h>            // eprintf
+#include <database.h>       //sigfox_select_devices
 
 
 typedef struct fcgi_request_s fcgi_request_t;
@@ -95,13 +97,13 @@ void* fastcgi_thread_function(void *arg)
 
     if ( FCGX_InitRequest(&request, thread_arg->socket_id, 0) != 0 )
     {
-        fprintf(stderr, "[THREAD_ID %02d] Can not initiate request\n", thread_arg->thread_id);
+        eprintf("THREAD_ID %02d: Can not initiate request\n", thread_arg->thread_id);
 
         return (NULL);
     }
 
 #ifdef __DEBUG__
-    printf("[THREAD_ID %02d] Request is initiated\n", thread_arg->thread_id);
+    gprintf("THREAD_ID %02d: Request is initiated\n", thread_arg->thread_id);
 #endif
 
     while ( 1 )
@@ -113,7 +115,7 @@ void* fastcgi_thread_function(void *arg)
         memset(&req, 0, sizeof(fcgi_request_t) );
 
 #ifdef __DEBUG__
-        printf("[THREAD_ID %02d] Waiting for a new request\n", thread_arg->thread_id);
+        gprintf("THREAD_ID %02d: Waiting for a new request\n", thread_arg->thread_id);
 #endif
 
 
@@ -130,13 +132,13 @@ void* fastcgi_thread_function(void *arg)
         // If there is a problem when accepting the new request, we display a message in the terminal
         if ( rc < 0 )
         {
-            fprintf(stderr, "[THREAD_ID %02d] Can not accept this new request\n", thread_arg->thread_id);
+            eprintf("THREAD_ID %02d: Can not accept this new request\n", thread_arg->thread_id);
             break;
         }
 
-        printf("[THREAD_ID %02d] Request %06d is accepted\n", thread_arg->thread_id, r);
+        gprintf("THREAD_ID %02d: Request %06d is accepted\n", thread_arg->thread_id, r);
 
-        if ( strstr(req.method, "POST") != NULL )
+        if ( strstr(req.method, "POST") )
         {
             FCGX_FPrintF(request.out,
                          "Content-type: text/html\r\n"
@@ -168,31 +170,51 @@ void* fastcgi_thread_function(void *arg)
                          req.content_length,
                          req.content_string);
         }
-        else
+        else if ( strstr(req.method, "GET") )
         {
-            FCGX_FPrintF(request.out,
-                         "Content-type: text/html\r\n"
-                         "\r\n"
-                         "<html>\r\n"
-                             "<head>\r\n"
-                                 "<title>FastCGI Hello! (multi-threaded C, fcgiapp library)</title>\r\n"
+            if (strcmp(req.uri, "/fcgi/devices") ==0)
+            {
+                json_object         *jarray     = NULL;
+                
+                // Get the list of devices
+                jarray = sigfox_select_devices(&(thread_arg->sigfox_db));
+
+                // Send back the datas
+                FCGX_FPrintF(request.out, "Content-type: application/json\r\n\r\n%s", json_object_to_json_string(jarray));
+            }
+            else if (strcmp(req.uri, "/fcgi/raws") ==0)
+            {
+                json_object         *jarray     = NULL;
+                
+                // Get the list of devices
+                jarray = sigfox_select_raws(&(thread_arg->sigfox_db));
+
+                // Send back the datas
+                FCGX_FPrintF(request.out, "Content-type: application/json\r\n\r\n%s", json_object_to_json_string(jarray));
+            }
+            else if (strcmp(req.uri, "/fcgi") == 0)
+            {
+                FCGX_FPrintF(request.out,
+                             "Content-type: text/html\r\n"
+                             "\r\n"
+                             "<html>\r\n"
+                                 "<head>\r\n"
+                                     "<title>FastCGI Hello! (multi-threaded C, fcgiapp library)</title>\r\n"
                                  "</head>\r\n"
                                  "<body style=\"font-family: monospace;\">\r\n"
                                      "<h1>FastCGI Hello! (multi-threaded C, fcgiapp library)</h1>\r\n"
-                                         "<p><b>Host</b> : <i>%s</i> (%s)<br/>\r\n"
-                                             "<b>Time</b> : %s (<i>Unix timestamp</i> : %d)<br/>\r\n"
-                                                 "<b>Request</b> : %06d<br/>\r\n"
-                                                     "<b>Thread</b> : %02d<br/>\r\n"
-                                                         "<b>Method</b> : %s</p>\r\n"
-                                                         "</body>\r\n"
-                                                     "</html>\r\n",
-                         req.server_name ? req.server_name : "?",
-                         req.remote_addr,
-                         ctime(&rawtime),
-                         rawtime,
-                         r,
-                         thread_arg->thread_id,
-                         req.method);
+                                     "<ul>\r\n"
+                                        "<li><a href=\"/fcgi/devices\">Devices list</a></li>\r\n"
+                                        "<li><a href=\"/fcgi/raws\">Raws list</a></li>\r\n"
+                                     "</ul>\r\n"
+                                 "</body>\r\n"
+                             "</html>");
+
+            }
+            else
+            {
+                FCGX_FPrintF(request.out, "Status: 404 Not Found");
+            }
         }
 
         FCGX_Finish_r(&request);
@@ -241,21 +263,21 @@ static void request_display(fcgi_request_t  req,
                             unsigned int    request_nb
                             )
 {
-    printf("--------------------------------\n");
-    printf("\033[1mREQUEST NUMBER      >\033[0m %u\n", request_nb);
-    printf("\033[1mreq.content_length  >\033[0m %s\n", req.content_length);
-    printf("\033[1mreq.content_string  >\033[0m %s\n", req.content_string);
-    printf("\033[1mreq.content_type    >\033[0m %s\n", req.content_type);
-    printf("\033[1mreq.is_multipart    >\033[0m %u\n", req.is_multipart);
-    printf("\033[1mreq.method          >\033[0m %s\n", req.method);
-    printf("\033[1mreq.path_info       >\033[0m %s\n", req.path_info);
-    printf("\033[1mreq.query_string    >\033[0m %s\n", req.query_string);
-    printf("\033[1mreq.remote_addr     >\033[0m %s\n", req.remote_addr);
-    printf("\033[1mreq.remote_port     >\033[0m %s\n", req.remote_port);
-    printf("\033[1mreq.script_filename >\033[0m %s\n", req.script_filename);
-    printf("\033[1mreq.script_name     >\033[0m %s\n", req.script_name);
-    printf("\033[1mreq.server_name     >\033[0m %s\n", req.server_name);
-    printf("\033[1mreq.uri             >\033[0m %s\n", req.uri);
+    gprintf("--------------------------------\n");
+    gprintf("REQUEST NUMBER      > %u\n", request_nb);
+    gprintf("req.content_length  > %s\n", req.content_length);
+    gprintf("req.content_string  > %s\n", req.content_string);
+    gprintf("req.content_type    > %s\n", req.content_type);
+    gprintf("req.is_multipart    > %u\n", req.is_multipart);
+    gprintf("req.method          > %s\n", req.method);
+    gprintf("req.path_info       > %s\n", req.path_info);
+    gprintf("req.query_string    > %s\n", req.query_string);
+    gprintf("req.remote_addr     > %s\n", req.remote_addr);
+    gprintf("req.remote_port     > %s\n", req.remote_port);
+    gprintf("req.script_filename > %s\n", req.script_filename);
+    gprintf("req.script_name     > %s\n", req.script_name);
+    gprintf("req.server_name     > %s\n", req.server_name);
+    gprintf("req.uri             > %s\n", req.uri);
 }
 
 

@@ -34,6 +34,7 @@ int main(void)
     int             i;
     pthread_t       threads[THREAD_COUNT];
     int             socket_id = 0;
+    sqlite3         *db = NULL;
 
 
     // Initialize the FCGX library.
@@ -51,6 +52,14 @@ int main(void)
     }
 
 
+    // Creation of the database
+    sigfox_open_db(&db, "sigfox.db");
+
+
+    // Creation of the tables
+    sigfox_create_tables(&db);
+
+
     // Creating the threads
     for ( i = 0; i < THREAD_COUNT; i++ )
     {
@@ -61,6 +70,7 @@ int main(void)
         // Putting the arguments into the structure
         thread_arg->socket_id   = socket_id;
         thread_arg->thread_id   = i;
+        thread_arg->sigfox_db   = db;
 
 
         // Creating a thread and passing the arguments

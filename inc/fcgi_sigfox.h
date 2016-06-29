@@ -11,6 +11,7 @@
 #define __FCGI_THREADS_H__
 
 #include <fcgiapp.h>          // FCGX_GetParam, FCGX_Request
+#include <sqlite3.h>          // sqlite3
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,6 +23,8 @@ typedef struct Thread_arg_s Thread_arg_t;
 struct Thread_arg_s {
     int socket_id;
     unsigned short thread_id;
+    sqlite3 *sigfox_db;
+
 };
 
 
