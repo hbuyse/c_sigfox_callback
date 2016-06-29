@@ -13,6 +13,7 @@
 #include <time.h>          // time_t, struct tm, time, localtime, strftime
 #include <json/json.h>          // json_object
 
+#include <logging.h>
 #include <frames.h>
 #include <sqls.h>          // CREATE_SIGFOX_TABLES, DROP_SIGFOX_TABLES, SELECT_RAWS, SELECT_DEVICES, INSERT_RAWS, INSERT_DEVICES
 
@@ -309,13 +310,13 @@ unsigned char sigfox_open_db(sqlite3    **db,
     {
         case SQLITE_OK:
 #ifdef __DEBUG__
-            fprintf(stdout, "[%s] Opened database successfully\n", __func__);
+            gprintf("Opened database successfully\n");
 #endif
             res = 0;
             break;
 
         default:
-            fprintf(stderr, "[%s] Can't open database: %s\n", __func__, sqlite3_errmsg(*db) );
+            eprintf("Can't open database: %s\n", sqlite3_errmsg(*db) );
             res = 1;
             break;
     }
@@ -336,7 +337,7 @@ unsigned char sigfox_create_tables(sqlite3 **db)
 
     if ( rc != SQLITE_OK )
     {
-        fprintf(stderr, "[%s] SQL error: %s\n", __func__, sqlite3_error_msg);
+        eprintf("SQL error: %s\n", sqlite3_error_msg);
         sqlite3_free(sqlite3_error_msg);
 
         return (3);
@@ -345,7 +346,7 @@ unsigned char sigfox_create_tables(sqlite3 **db)
 #ifdef __DEBUG__
     else
     {
-        fprintf(stdout, "[%s] Tables created successfully\n", __func__);
+        gprintf("Tables created successfully\n");
     }
 #endif
 
@@ -374,15 +375,13 @@ unsigned char sigfox_insert_devices(sqlite3                 **db,
     {
         case SQLITE_OK:
 #ifdef __DEBUG__
-            fprintf(stdout, "[%s] Device %s inserted into devices table\n", __func__, device.id_modem);
+            gprintf("Device %s inserted into devices table\n", device.id_modem);
 #endif
             res = 0;
             break;
 
         case SQLITE_CONSTRAINT:
-            fprintf(stderr,
-                    "[%s] Device %s already in the database (SQL Error: %s)\n",
-                    __func__,
+            cprintf("Device %s already in the database (SQL Error: %s)\n",
                     device.id_modem,
                     sqlite3_error_msg);
             sqlite3_free(sqlite3_error_msg);
@@ -390,7 +389,7 @@ unsigned char sigfox_insert_devices(sqlite3                 **db,
             break;
 
         default:
-            fprintf(stderr, "[%s] SQL error (%d): %s\n", __func__, rc, sqlite3_error_msg);
+            eprintf("SQL error (%d): %s\n", rc, sqlite3_error_msg);
             sqlite3_free(sqlite3_error_msg);
             res = 1;
             break;
@@ -425,13 +424,13 @@ unsigned char sigfox_insert_raws(sqlite3        **db,
     {
         case SQLITE_OK:
 #ifdef __DEBUG__
-            fprintf(stdout, "[%s] Raw %s inserted into raws table\n", __func__, raws.data_str);
+            gprintf("Raw %s inserted into raws table\n", raws.data_str);
 #endif
             res = 0;
             break;
 
         default:
-            fprintf(stderr, "[%s] SQL error (%d): %s\n", __func__, rc, sqlite3_error_msg);
+            eprintf("SQL error (%d): %s\n", rc, sqlite3_error_msg);
             sqlite3_free(sqlite3_error_msg);
             res = 1;
             break;
@@ -458,7 +457,7 @@ json_object* sigfox_select_raws(sqlite3 **db)
 
     if ( rc != SQLITE_OK )
     {
-        fprintf(stderr, "SQL error: %s\n", sqlite3_error_msg);
+        eprintf("SQL error: %s\n", sqlite3_error_msg);
         sqlite3_free(sqlite3_error_msg);
     }
 
@@ -483,7 +482,7 @@ json_object* sigfox_select_devices(sqlite3 **db)
 
     if ( rc != SQLITE_OK )
     {
-        fprintf(stderr, "SQL error: %s\n", sqlite3_error_msg);
+        eprintf("SQL error: %s\n", sqlite3_error_msg);
         sqlite3_free(sqlite3_error_msg);
     }
 
@@ -503,7 +502,7 @@ unsigned char sigfox_delete_db(sqlite3 **db)
 
     if ( rc != SQLITE_OK )
     {
-        fprintf(stderr, "SQL error: %s\n", sqlite3_error_msg);
+        eprintf("SQL error: %s\n", sqlite3_error_msg);
         sqlite3_free(sqlite3_error_msg);
 
         return (3);
@@ -512,7 +511,7 @@ unsigned char sigfox_delete_db(sqlite3 **db)
 #ifdef __DEBUG__
     else
     {
-        fprintf(stdout, "Tables deleted successfully\n");
+        gprintf("Tables deleted successfully\n");
     }
 #endif
 
