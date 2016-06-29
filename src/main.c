@@ -7,10 +7,15 @@
 #include <sqlite3.h>          // sqlite3
 #include <time.h>           // time
 #include <json/json.h>          // json_object, json_object_array_length
+#include <pthread.h>
 
 #include <database.h>          // sigfox_open_db
 #include <logging.h>            // gprintf
+#include <fcgi_sigfox.h>        // Thread_arg_t, fastcgi_thread_function
 
+
+#define THREAD_COUNT 20
+#define PORT_FASTCGI ":8082"
 
 /**
  * \brief List of devices that the program follows
@@ -26,6 +31,52 @@ const sigfox_device_t     devices[] =
 
 int main(void)
 {
+    int             i;
+    pthread_t       threads[THREAD_COUNT];
+    int             socket_id = 0;
+
+
+    // Initialize the FCGX library.
+    FCGX_Init();
+
+
+    // Getting the FCGX request on port PORT_FASTCGI
+    socket_id = FCGX_OpenSocket(PORT_FASTCGI, 2000);
+
+    if ( socket_id < 0 )
+    {
+        fprintf(stderr, "Socket could not be opened\n");
+
+        return (1);
+    }
+
+
+    // Creating the threads
+    for ( i = 0; i < THREAD_COUNT; i++ )
+    {
+        // Allocating and setting to zeros the structure
+        Thread_arg_t     *thread_arg = (Thread_arg_t *) calloc(2, sizeof(Thread_arg_t) );
+
+
+        // Putting the arguments into the structure
+        thread_arg->socket_id   = socket_id;
+        thread_arg->thread_id   = i;
+
+
+        // Creating a thread and passing the arguments
+        pthread_create(&threads[i], NULL, fastcgi_thread_function, (void *) thread_arg);
+    }
+
+
+    // Joining the threads
+    for ( i = 0; i < THREAD_COUNT; i++ )
+    {
+        pthread_join(threads[i], NULL);
+    }
+
+    return (0);
+
+#if 0
     sqlite3             *db         = NULL;
     json_object         *jarray     = NULL;
     unsigned char       i           = 0;
@@ -92,4 +143,5 @@ int main(void)
     // sigfox_delete_db(&db);
 
     return (0);
+#endif
 }
