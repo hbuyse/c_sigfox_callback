@@ -124,7 +124,7 @@ void* fastcgi_thread_function(void *arg)
         memset(&req, 0, sizeof(fcgi_request_t) );
 
 #ifdef __DEBUG__
-        gprintf("THREAD_ID %02d: Waiting for a new request\n", thread_arg->thread_id);
+        iprintf("THREAD_ID %02d: Waiting for a new request\n", thread_arg->thread_id);
 #endif
 
 
@@ -135,8 +135,8 @@ void* fastcgi_thread_function(void *arg)
         time(&rawtime);          // Get the time of the computer
         pthread_mutex_unlock(&accept_mtx);          // Unlock the mutex
 
-        request_display(req, r);
-
+        // Print informations about the FCGX request
+        iprintf("%s %s %s %s\n", req.method, req.script_name, req.content_length, req.content_string);
 
         // If there is a problem when accepting the new request, we display a message in the terminal
         if ( rc < 0 )
@@ -145,7 +145,7 @@ void* fastcgi_thread_function(void *arg)
             break;
         }
 
-        gprintf("THREAD_ID %02d: Request %06d is accepted\n", thread_arg->thread_id, r);
+        iprintf("THREAD_ID %02d: Request %06d is accepted\n", thread_arg->thread_id, r);
 
         if ( strcmp(req.method, "HEAD") == 0 )
         {
@@ -273,21 +273,21 @@ static void request_display(fcgi_request_t  req,
                             unsigned int    request_nb
                             )
 {
-    gprintf("--------------------------------\n");
-    gprintf("REQUEST NUMBER      > %u\n", request_nb);
-    gprintf("req.content_length  > %s\n", req.content_length);
-    gprintf("req.content_string  > %s\n", req.content_string);
-    gprintf("req.content_type    > %s\n", req.content_type);
-    gprintf("req.is_multipart    > %u\n", req.is_multipart);
-    gprintf("req.method          > %s\n", req.method);
-    gprintf("req.path_info       > %s\n", req.path_info);
-    gprintf("req.query_string    > %s\n", req.query_string);
-    gprintf("req.remote_addr     > %s\n", req.remote_addr);
-    gprintf("req.remote_port     > %s\n", req.remote_port);
-    gprintf("req.script_filename > %s\n", req.script_filename);
-    gprintf("req.script_name     > %s\n", req.script_name);
-    gprintf("req.server_name     > %s\n", req.server_name);
-    gprintf("req.uri             > %s\n", req.uri);
+    iprintf("--------------------------------\n");
+    iprintf("REQUEST NUMBER      > %u\n", request_nb);
+    iprintf("req.content_length  > %s\n", req.content_length);
+    iprintf("req.content_string  > %s\n", req.content_string);
+    iprintf("req.content_type    > %s\n", req.content_type);
+    iprintf("req.is_multipart    > %u\n", req.is_multipart);
+    iprintf("req.method          > %s\n", req.method);
+    iprintf("req.path_info       > %s\n", req.path_info);
+    iprintf("req.query_string    > %s\n", req.query_string);
+    iprintf("req.remote_addr     > %s\n", req.remote_addr);
+    iprintf("req.remote_port     > %s\n", req.remote_port);
+    iprintf("req.script_filename > %s\n", req.script_filename);
+    iprintf("req.script_name     > %s\n", req.script_name);
+    iprintf("req.server_name     > %s\n", req.server_name);
+    iprintf("req.uri             > %s\n", req.uri);
 }
 
 
