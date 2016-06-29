@@ -10,7 +10,7 @@
 #include <fcgiapp.h>          // FCGX_Request, FCGX_Accept_r, FCGX_FPrintF, FCGX_Finish_r
 #include <pthread.h>          // pthread_mutex_lock, pthread_mutex_unlock, pthread_t, pthread_mutex_t, pthread_exit
 #include <stdio.h>          // printf, fprintf
-#include <stdlib.h>          // NULL
+#include <stdlib.h>          // NULL, strtol
 #include <string.h>          // memset, strstr
 #include <time.h>          // time_t, time
 #include <inttypes.h>       // uint64_t
@@ -299,7 +299,7 @@ static short get_content_string(FCGX_Request    request,
     int     msg_length = 0;
 
 
-    msg_length          = atoi(req->content_length) + 1;
+    msg_length          = strtol(req->content_length, NULL, 10) + 1;
 
 
     // Allocate and initiate to zero the string
