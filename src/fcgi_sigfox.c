@@ -13,12 +13,20 @@
 #include <stdlib.h>          // NULL
 #include <string.h>          // memset, strstr
 #include <time.h>          // time_t, time
-#include <inttypes.h>
+#include <inttypes.h>       // uint64_t
 #include <json/json.h>      // json_object
 
 #include <fcgi_sigfox.h>          // Thread_arg_t
 #include <logging.h>            // eprintf
 #include <database.h>       //sigfox_select_devices
+
+
+#define OK(stream) \
+        FCGX_FPrintF(stream, "Status: 200 OK\r\nContent-Type: application/json\r\n\r\n");
+#define FORBIDDEN(stream) \
+        FCGX_FPrintF(stream, "Status: 403 Forbidden\r\nContent-Type: application/json\r\n\r\n");
+#define NOTFOUND(stream) \
+        FCGX_FPrintF(stream, "Status: 404 Not Found\r\nContent-Type: application/json\r\n\r\n");
 
 
 typedef struct fcgi_request_s fcgi_request_t;
@@ -139,41 +147,39 @@ void* fastcgi_thread_function(void *arg)
 
         gprintf("THREAD_ID %02d: Request %06d is accepted\n", thread_arg->thread_id, r);
 
-        if ( strstr(req.method, "POST") )
+        if ( strcmp(req.method, "HEAD") == 0 )
         {
-            FCGX_FPrintF(request.out,
-                         "Content-type: text/html\r\n"
-                         "\r\n"
-                         "<html>\r\n"
-                             "<head>\r\n"
-                                 "<title>FastCGI Hello! (multi-threaded C, fcgiapp library)</title>\r\n"
-                                 "</head>\r\n"
-                                 "<body style=\"font-family: monospace;\">\r\n"
-                                     "<h1>FastCGI Hello! (multi-threaded C, fcgiapp library)</h1>\r\n"
-                                         "<p><b>Host</b> : <i>%s</i> (%s)<br/>\r\n"
-                                             "<b>Time</b> : %s (<i>Unix timestamp</i> : %d)<br/>\r\n"
-                                                 "<b>Request</b> : %06d<br/>\r\n"
-                                                     "<b>Thread</b> : %02d<br/>\r\n"
-                                                         "<b>Method</b> : %s<br/>\r\n"
-                                                             "<b>Is Multipart ?</b> : %s<br/>\r\n"
-                                                                 "<b>Content length</b> : %s<br/>\r\n"
-                                                                     "<b>Content string</b> : %s</p>\r\n"
-                                                                     "</body>\r\n"
-                                                                 "</html>\r\n",
-                         req.server_name ? req.server_name : "?",
-                         req.remote_addr,
-                         ctime(&rawtime),
-                         rawtime,
-                         r,
-                         thread_arg->thread_id,
-                         req.method,
-                         req.is_multipart ? "true" : "false",
-                         req.content_length,
-                         req.content_string);
+            if ((strcmp(req.uri, "/fcgi/devices") ==0) || (strcmp(req.uri, "/fcgi/raws") ==0))
+            {
+                OK(request.out);
+            }
+            else
+            {
+                NOTFOUND(request.out);
+            }
         }
-        else if ( strstr(req.method, "GET") )
+        else if ( strcmp(req.method, "POST") == 0 )
         {
-            if (strcmp(req.uri, "/fcgi/devices") ==0)
+            if (strcmp(req.uri, "/fcgi/devices") == 0)
+            {
+                #if 0
+                json_object* device = json_tokener_parse(req.content_string);
+                #endif
+
+                FORBIDDEN(request.out);
+            }
+            else if (strcmp(req.uri, "/fcgi/raws") == 0)
+            {
+                OK(request.out);
+            }
+            else
+            {
+                NOTFOUND(request.out);
+            }
+        }
+        else if ( strcmp(req.method, "GET") == 0 )
+        {
+            if (strcmp(req.uri, "/fcgi/devices") == 0)
             {
                 json_object         *jarray     = NULL;
                 
@@ -185,7 +191,7 @@ void* fastcgi_thread_function(void *arg)
                 // Send back the datas
                 FCGX_FPrintF(request.out, "Content-type: application/json\r\n\r\n%s", json_object_to_json_string(jarray));
             }
-            else if (strcmp(req.uri, "/fcgi/raws") ==0)
+            else if (strcmp(req.uri, "/fcgi/raws") == 0)
             {
                 json_object         *jarray     = NULL;
                 
@@ -214,11 +220,10 @@ void* fastcgi_thread_function(void *arg)
                                      "</ul>\r\n"
                                  "</body>\r\n"
                              "</html>");
-
             }
             else
             {
-                FCGX_FPrintF(request.out, "Status: 404 Not Found");
+                NOTFOUND(request.out);
             }
         }
 
