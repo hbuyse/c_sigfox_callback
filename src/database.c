@@ -130,6 +130,42 @@ static int callback_json(void   *data,
         {
             value = json_object_new_double(atof(argv[i]) );
         }
+        else if ( strcmp(col_name[i], SQL_COL_DATA_STR) == 0 )
+        {
+            unsigned char       j               = 0;
+            size_t              len             = 0;
+            json_object         *data_hex       = NULL;
+            json_object         *data_hex_array = NULL;
+
+
+            // Create the array that will store the datas in integer
+            data_hex        = json_object_new_object();
+            data_hex_array  = json_object_new_array();
+
+
+            // Get the length of the string
+            len = strlen(argv[i]);
+
+            for ( j = 0; j < len; j += 2 )
+            {
+                json_object         *data_hex_val   = NULL;
+                unsigned char       s[]             = {argv[i][j], (argv[i][j + 1]) ? argv[i][j + 1] : 0, 0};
+
+
+                // Create the json value to store into the array
+                data_hex_val = json_object_new_int(strtol( (const char *) s, NULL, 16) );
+
+
+                // Store in the array
+                json_object_array_add(data_hex_array, data_hex_val);
+            }
+
+            json_object_object_add(jobj, SQL_COL_DATA_HEX, data_hex_array);
+
+
+            // Add the data_str value to the JSON
+            value = json_object_new_string(argv[i]);
+        }
         else
         {
             value = json_object_new_string(argv[i]);
