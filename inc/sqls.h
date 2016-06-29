@@ -47,7 +47,6 @@ extern "C" {
     "  `station` TEXT NOT NULL,\n" \
     "  `ack` integer,\n" \
     "  `data_str` TEXT NOT NULL,\n" \
-    "  `data_hex` BLOB NOT NULL,\n" \
     "  `duplicate` INTEGER NOT NULL,\n" \
     "  `avg_signal` REAL NOT NULL,\n" \
     "  `rssi` REAL NOT NULL,\n" \
@@ -100,7 +99,7 @@ extern "C" {
  * \brief SQL command to insert data from a sigfox_raws_t to the database
  */
 #define INSERT_RAWS \
-    "INSERT INTO `raws` VALUES (NULL, %ld, '%s', %.2f, '%s', %u, '%s', '', %u, %.2f, %.2f, %u, %u, %u);"
+    "INSERT INTO `raws` VALUES (NULL, %ld, '%s', %.2f, '%s', %u, '%s', %u, %.2f, %.2f, %u, %u, %u);"
 
 #ifdef     __cplusplus
 }
