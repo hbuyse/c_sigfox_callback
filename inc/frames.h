@@ -67,12 +67,11 @@ struct sigfox_raws_s {
     unsigned char data_str[SIGFOX_DATA_STR_LENGTH + 1];          ///< the user data (in string)
     unsigned char data_hex[SIGFOX_DATA_LENGTH];          ///< the user data (in hexadecimal)
     double avg_signal;          ///< the average signal to noise ratio computed from the last 25 messages (in dB – Float value with two maximum
-                                // fraction
-                                ///< digits) or «N/A». The device must have send at least 15 messages.
+                                ///< fraction digits) or «N/A». The device must have send at least 15 messages.
     unsigned char latitude;          ///< the latitude, rounded to the nearest integer, of the base station which received the message
     unsigned char longitude;          ///< the longitude, rounded to the nearest integer, of the base station which received the message
     double rssi;          ///< the RSSI (in dBm – Float value with two maximum fraction digits). If there is no data to be returned, then the value is
-                          // null.
+                          ///< null.
     unsigned int seq_number;          ///< the sequence number of the message if available
     unsigned char ack;          ///< true if this message needs to be acknowledged, false else
     unsigned char long_polling;          ///< longPolling : 'true' or 'false'
