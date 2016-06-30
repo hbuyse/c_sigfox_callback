@@ -21,12 +21,13 @@
 #include <database.h>       //sigfox_select_devices
 
 
-#define OK(stream) \
-        FCGX_FPrintF(stream, "Status: 200 OK\r\nContent-Type: application/json\r\n\r\n");
-#define FORBIDDEN(stream) \
-        FCGX_FPrintF(stream, "Status: 403 Forbidden\r\nContent-Type: application/json\r\n\r\n");
-#define NOTFOUND(stream) \
-        FCGX_FPrintF(stream, "Status: 404 Not Found\r\nContent-Type: application/json\r\n\r\n");
+#define URI_DEVICES "/fcgi/devices"
+#define URI_RAWS    "/fcgi/raws"
+
+#define OK(stream)          FCGX_FPrintF(stream, "Status: 200 OK\r\nContent-Type: application/json\r\n\r\n");
+#define BAD_REQUEST(stream) FCGX_FPrintF(stream, "Status: 400 Bad Request\r\nContent-Type: application/json\r\n\r\n");
+#define FORBIDDEN(stream)   FCGX_FPrintF(stream, "Status: 403 Forbidden\r\nContent-Type: application/json\r\n\r\n");
+#define NOTFOUND(stream)    FCGX_FPrintF(stream, "Status: 404 Not Found\r\nContent-Type: application/json\r\n\r\n");
 
 
 typedef struct fcgi_request_s fcgi_request_t;
@@ -149,7 +150,7 @@ void* fastcgi_thread_function(void *arg)
 
         if ( strcmp(req.method, "HEAD") == 0 )
         {
-            if ((strcmp(req.uri, "/fcgi/devices") ==0) || (strcmp(req.uri, "/fcgi/raws") ==0))
+            if ((strcmp(req.uri, URI_DEVICES) ==0) || (strcmp(req.uri, URI_RAWS) ==0))
             {
                 OK(request.out);
             }
@@ -160,26 +161,48 @@ void* fastcgi_thread_function(void *arg)
         }
         else if ( strcmp(req.method, "POST") == 0 )
         {
-            if (strcmp(req.uri, "/fcgi/devices") == 0)
+            if (strcmp(req.content_type, "Content-Type: application/json") != 0)
             {
-                #if 0
-                json_object* device = json_tokener_parse(req.content_string);
-                #endif
-
-                FORBIDDEN(request.out);
-            }
-            else if (strcmp(req.uri, "/fcgi/raws") == 0)
-            {
-                OK(request.out);
+                BAD_REQUEST(request.out);
             }
             else
             {
-                NOTFOUND(request.out);
+                if (strcmp(req.uri, URI_DEVICES) == 0)
+                {
+                    #if 0
+                    json_object* device = json_tokener_parse(req.content_string);
+                    #endif
+
+                    FORBIDDEN(request.out);
+                }
+                else if (strcmp(req.uri, URI_RAWS) == 0)
+                {
+                    sigfox_raws_t raws;
+                    json_object* jraws = NULL;
+                    
+                    // Parse the incomming JSON
+                    jraws = json_tokener_parse(req.content_string);
+
+
+                    sigfox_raws_from_json(&raws, jraws);
+                    if (sigfox_insert_raws(&(thread_arg->sigfox_db), raws) == 0)
+                    {
+                        OK(request.out);
+                    }
+                    else
+                    {
+                        BAD_REQUEST(request.out);
+                    }
+                }
+                else
+                {
+                    NOTFOUND(request.out);
+                }
             }
         }
         else if ( strcmp(req.method, "GET") == 0 )
         {
-            if (strcmp(req.uri, "/fcgi/devices") == 0)
+            if (strcmp(req.uri, URI_DEVICES) == 0)
             {
                 json_object         *jarray     = NULL;
                 
@@ -191,7 +214,7 @@ void* fastcgi_thread_function(void *arg)
                 // Send back the datas
                 FCGX_FPrintF(request.out, "Content-type: application/json\r\n\r\n%s", json_object_to_json_string(jarray));
             }
-            else if (strcmp(req.uri, "/fcgi/raws") == 0)
+            else if (strcmp(req.uri, URI_RAWS) == 0)
             {
                 json_object         *jarray     = NULL;
                 
@@ -215,8 +238,8 @@ void* fastcgi_thread_function(void *arg)
                                  "<body style=\"font-family: monospace;\">\r\n"
                                      "<h1>FastCGI Hello! (multi-threaded C, fcgiapp library)</h1>\r\n"
                                      "<ul>\r\n"
-                                        "<li><a href=\"/fcgi/devices\">Devices list</a></li>\r\n"
-                                        "<li><a href=\"/fcgi/raws\">Raws list</a></li>\r\n"
+                                        "<li><a href=\"" URI_DEVICES "\">Devices list</a></li>\r\n"
+                                        "<li><a href=\"" URI_RAWS "\">Raws list</a></li>\r\n"
                                      "</ul>\r\n"
                                  "</body>\r\n"
                              "</html>");
