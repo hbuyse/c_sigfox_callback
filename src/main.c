@@ -35,6 +35,7 @@ int main(void)
     pthread_t       threads[THREAD_COUNT];
     int             socket_id = 0;
     sqlite3         *db = NULL;
+    unsigned char       devices_len = 0;
 
 
     // Initialize the FCGX library.
@@ -58,6 +59,14 @@ int main(void)
 
     // Creation of the tables
     sigfox_create_tables(&db);
+
+    // Add a device into the list
+    devices_len = sizeof(devices) / sizeof(devices[0]);
+
+    for ( i = 0; i < devices_len; ++i )
+    {
+        sigfox_insert_devices(&db, devices[i]);
+    }
 
 
     // Creating the threads
