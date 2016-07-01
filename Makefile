@@ -28,6 +28,7 @@ $(shell mkdir -p $(DIR_SRC) $(DIR_OBJ) $(DIR_DEP))
 
 
 CFLAGS  += -W -Wall -Wextra -Wno-unused-function -fmessage-length=0 -D_REENTRANT -I $(DIR_INC) $(shell pkg-config --cflags json-c)
+CFLAGS  += -DMG_DISABLE_JSON_RPC -DMG_ENABLE_THREADS
 LDFLAGS += -lpthread -lfcgi -lsqlite3 $(shell pkg-config --libs json-c)
 
 
