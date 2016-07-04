@@ -239,7 +239,7 @@ static void op_get(struct mg_connection         *nc,
             mg_printf_http_chunk(nc, "\"rssi\": %f, ", sqlite3_column_double(stmt, SQL_IDX_RSSI) );
             mg_printf_http_chunk(nc, "\"latitude\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_LATITUDE) );
             mg_printf_http_chunk(nc, "\"longitude\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_LONGITUDE) );
-            mg_printf_http_chunk(nc, "\"seq_number\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_SEQ_NUMBER) );
+            mg_printf_http_chunk(nc, "\"seq_number\": %lu ", sqlite3_column_int(stmt, SQL_IDX_SEQ_NUMBER) );
             mg_printf_http_chunk(nc, "}, ");
         }
 
