@@ -14,12 +14,36 @@
 #include <logging.h>          // iprintf, eprintf, gprintf, cprintf
 
 
+/**
+ * \brief      Add an raws structure into the database
+ *
+ * \param      nc    The non-client
+ * \param[in]  hm    The HTTP message
+ * \param[in]  key   The key
+ * \param      db    The database
+ */
 static void op_set(struct mg_connection *nc, const struct http_message *hm, const struct mg_str *key, void *db);
 
 
+/**
+ * \brief      Select all the raws structure from the database
+ *
+ * \param      nc    The non-client
+ * \param[in]  hm    The HTTP message
+ * \param[in]  key   The key
+ * \param      db    The database
+ */
 static void op_get(struct mg_connection *nc, const struct http_message *hm, const struct mg_str *key, void *db);
 
 
+/**
+ * \brief     Delete a raws structure from the database
+ *
+ * \param      nc    The non-client
+ * \param[in]  hm    The HTTP message
+ * \param[in]  key   The key
+ * \param      db    The database
+ */
 static void op_del(struct mg_connection *nc, const struct http_message *hm, const struct mg_str *key, void *db);
 
 
@@ -47,17 +71,17 @@ static void convert_data_str_to_data_hex(const unsigned char    data_str[SIGFOX_
 
 #ifdef __DEBUG__
     #define MG_PRINTF_200 \
-        mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"); gprintf("200 OK\n");
+    mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"); gprintf("200 OK\n");
     #define MG_PRINTF_201 \
-        mg_printf(nc, "HTTP/1.1 201 Created\r\nContent-Length: 0\r\n\r\n"); gprintf("201 Created\n");
+    mg_printf(nc, "HTTP/1.1 201 Created\r\nContent-Length: 0\r\n\r\n"); gprintf("201 Created\n");
     #define MG_PRINTF_400 \
-        mg_printf(nc, "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n"); eprintf("400 Bad Request\n");
+    mg_printf(nc, "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n"); eprintf("400 Bad Request\n");
     #define MG_PRINTF_404 \
-        mg_printf(nc, "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"); eprintf("404 Not Found\n");
+    mg_printf(nc, "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"); eprintf("404 Not Found\n");
     #define MG_PRINTF_500 \
-        mg_printf(nc, "HTTP/1.1 500 Server Error\r\nContent-Length: 0\r\n\r\n"); eprintf("500 Server Error\n");
+    mg_printf(nc, "HTTP/1.1 500 Server Error\r\nContent-Length: 0\r\n\r\n"); eprintf("500 Server Error\n");
     #define MG_PRINTF_501 \
-        mg_printf(nc, "HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n"); eprintf("501 Not Implemented\n");
+    mg_printf(nc, "HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n"); eprintf("501 Not Implemented\n");
 #else
     #define MG_PRINTF_200   mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
     #define MG_PRINTF_201   mg_printf(nc, "HTTP/1.1 201 Created\r\nContent-Length: 0\r\n\r\n");

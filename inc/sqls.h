@@ -59,6 +59,8 @@ extern "C" {
 #define SQL_IDX_LATITUDE    11  ///< Latitude column index
 #define SQL_IDX_LONGITUDE   12  ///< Longitude column index
 #define SQL_IDX_SEQ_NUMBER  13  ///< Sequence number column index
+
+
 /**@}*/
 
 
