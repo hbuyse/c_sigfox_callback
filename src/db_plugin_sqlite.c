@@ -1,6 +1,9 @@
-/*
- * Copyright (c) 2014 Cesanta Software Limited
- * All rights reserved
+/**
+ * @file db_plugin_sqlite.c
+ * @author hbuyse
+ * @date 04/07/2016
+ *
+ * @brief SQLite operations source file
  */
 
 #include <sqlite3.h>
