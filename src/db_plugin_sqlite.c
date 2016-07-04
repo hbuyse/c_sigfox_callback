@@ -74,6 +74,8 @@ static void convert_data_str_to_data_hex(const unsigned char    data_str[SIGFOX_
     mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"); gprintf("200 OK\n");
     #define MG_PRINTF_201 \
     mg_printf(nc, "HTTP/1.1 201 Created\r\nContent-Length: 0\r\n\r\n"); gprintf("201 Created\n");
+    #define MG_PRINTF_204 \
+    mg_printf(nc, "HTTP/1.1 204 No Content\r\nContent-Length: 0\r\n\r\n"); gprintf("204 No Content\n");
     #define MG_PRINTF_400 \
     mg_printf(nc, "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n"); eprintf("400 Bad Request\n");
     #define MG_PRINTF_404 \
@@ -85,6 +87,7 @@ static void convert_data_str_to_data_hex(const unsigned char    data_str[SIGFOX_
 #else
     #define MG_PRINTF_200   mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
     #define MG_PRINTF_201   mg_printf(nc, "HTTP/1.1 201 Created\r\nContent-Length: 0\r\n\r\n");
+    #define MG_PRINTF_204   mg_printf(nc, "HTTP/1.1 204 No Content\r\nContent-Length: 0\r\n\r\n");
     #define MG_PRINTF_400   mg_printf(nc, "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n");
     #define MG_PRINTF_404   mg_printf(nc, "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n");
     #define MG_PRINTF_500   mg_printf(nc, "HTTP/1.1 500 Server Error\r\nContent-Length: 0\r\n\r\n");
@@ -158,6 +161,7 @@ static void op_set(struct mg_connection         *nc,
     const struct mg_str     *body   = (hm->query_string.len > 0) ? &hm->query_string : &hm->body;
     struct json_token       *root   = NULL;
     sigfox_raws_t           raws;
+    int result = 0;
 
 
     root = parse_json2(body->p, body->len);
@@ -180,14 +184,23 @@ static void op_set(struct mg_connection         *nc,
     if ( sqlite3_prepare_v2(db, INSERT_RAWS, -1, &stmt, NULL) == SQLITE_OK )
     {
         sqlite3_bind_int(stmt, SQL_IDX_TIMESTAMP, raws.timestamp);
-        sqlite3_bind_text(stmt, SQL_IDX_ID_MODEM, (const char *) raws.id_modem, strlen(
-                              (const char *) raws.id_modem), SQLITE_STATIC);
+        sqlite3_bind_text(stmt,
+                          SQL_IDX_ID_MODEM,
+                          (const char *) raws.id_modem,
+                          strlen( (const char *) raws.id_modem),
+                          SQLITE_STATIC);
         sqlite3_bind_double(stmt, SQL_IDX_SNR, raws.snr);
-        sqlite3_bind_text(stmt, SQL_IDX_STATION, (const char *) raws.station, strlen(
-                              (const char *) raws.station), SQLITE_STATIC);
+        sqlite3_bind_text(stmt,
+                          SQL_IDX_STATION,
+                          (const char *) raws.station,
+                          strlen( (const char *) raws.station),
+                          SQLITE_STATIC);
         sqlite3_bind_int(stmt, SQL_IDX_ACK, raws.ack);
-        sqlite3_bind_text(stmt, SQL_IDX_DATA_STR, (const char *) raws.data_str, strlen(
-                              (const char *) raws.data_str), SQLITE_STATIC);
+        sqlite3_bind_text(stmt,
+                          SQL_IDX_DATA_STR,
+                          (const char *) raws.data_str,
+                          strlen( (const char *) raws.data_str),
+                          SQLITE_STATIC);
         sqlite3_bind_blob(stmt, SQL_IDX_DATA_HEX, (void *) raws.data_hex, sizeof(raws.data_hex), SQLITE_STATIC);
         sqlite3_bind_int(stmt, SQL_IDX_DUPLICATE, raws.duplicate);
         sqlite3_bind_double(stmt, SQL_IDX_AVG_SIGNAL, raws.avg_signal);
@@ -195,11 +208,38 @@ static void op_set(struct mg_connection         *nc,
         sqlite3_bind_int(stmt, SQL_IDX_LATITUDE, raws.latitude);
         sqlite3_bind_int(stmt, SQL_IDX_LONGITUDE, raws.longitude);
         sqlite3_bind_int(stmt, SQL_IDX_SEQ_NUMBER, raws.seq_number);
-        sqlite3_step(stmt);
+        result = sqlite3_step(stmt);
         sqlite3_finalize(stmt);
     }
 
-    MG_PRINTF_201
+    if ( raws.ack && (result == SQLITE_DONE) )
+    {
+        char     downlink_data[SIGFOX_DOWNLINK_DATA_LENGTH + 1];
+
+
+        // Copy the first 16 bytes of data_str
+        memset(downlink_data, 0, sizeof(downlink_data) );
+        strncpy(downlink_data, (const char *) raws.data_str, SIGFOX_DOWNLINK_DATA_LENGTH);
+        downlink_data[0] += 1;
+
+
+        // Send headers
+        mg_printf(nc, "HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nTransfer-Encoding: chunked\r\n\r\n");
+        mg_printf_http_chunk(nc, "{ \"%s\": { \"downlinkData\": \"%s\" } }", raws.id_modem, downlink_data);
+        mg_send_http_chunk(nc, "", 0);
+
+#ifdef __DEBUG__
+        gprintf("201 Created\n");
+#endif
+    }
+    else if ( result == SQLITE_DONE )
+    {
+        MG_PRINTF_204
+    }
+    else
+    {
+        MG_PRINTF_500
+    }
 }
 
 
@@ -250,7 +290,9 @@ static void op_get(struct mg_connection         *nc,
 
         // Send empty chunk, the end of response
         mg_send_http_chunk(nc, "", 0);
+        #ifdef __DEBUG__
         gprintf("200 OK\n");
+        #endif
     }
     else
     {

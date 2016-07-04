@@ -20,25 +20,31 @@ extern "C" {
 /**
  * @brief Length of a Sigfox data frame in string
  */
-#define SIGFOX_DATA_STR_LENGTH  24
+#define SIGFOX_DATA_STR_LENGTH      24
+
+
+/**
+ * @brief Length of a Sigfox downlink data frame in string
+ */
+#define SIGFOX_DOWNLINK_DATA_LENGTH 16
 
 
 /**
  * @brief Length of a Sigfox data frame in hexadecimal
  */
-#define SIGFOX_DATA_LENGTH      12
+#define SIGFOX_DATA_LENGTH          12
 
 
 /**
  * @brief Length of a Sigfox station name
  */
-#define SIGFOX_STATION_LENGTH   4
+#define SIGFOX_STATION_LENGTH       4
 
 
 /**
  * @brief Length of a Sigfox modem name
  */
-#define SIGFOX_DEVICE_LENGTH    8
+#define SIGFOX_DEVICE_LENGTH        8
 
 
 /**

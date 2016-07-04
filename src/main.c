@@ -161,16 +161,20 @@ static void ev_handler(struct mg_connection *nc,
             {
                 API_Operation       op = API_OP_NULL;
 
+#ifdef __DEBUG__
                 char                body[4096];
                 char                uri[1024];
                 char                method[10];
 
-                key.p   = hm->uri.p + api_prefix.len;       // Memory chunk pointer
-                key.len = hm->uri.len - api_prefix.len;          // Memory chunk length
-
                 snprintf(body, hm->body.len + sizeof(char), "%s", hm->body.p);
                 snprintf(uri, hm->uri.len + sizeof(char), "%s", hm->uri.p);
                 snprintf(method, hm->method.len + sizeof(char), "%s", hm->method.p);
+
+                iprintf("%s %s %zu %s\n", method, uri, hm->body.len, body);
+#endif
+
+                key.p   = hm->uri.p + api_prefix.len;       // Memory chunk pointer
+                key.len = hm->uri.len - api_prefix.len;          // Memory chunk length
 
                 if ( is_equal(&hm->method, &s_get_method) )
                 {
@@ -188,8 +192,6 @@ static void ev_handler(struct mg_connection *nc,
                 {
                     op = API_OP_NULL;
                 }
-
-                iprintf("%s %s %zu %s\n", method, uri, hm->body.len, body);
 
                 if ( op == API_OP_NULL )
                 {
