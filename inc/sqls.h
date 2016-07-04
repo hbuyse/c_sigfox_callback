@@ -16,48 +16,55 @@ extern "C" {
 
 
 /**
- * \defgroup  Raws_col_name  Raws table column names
+ * @defgroup  Raws_col_name  Raws table column names
  * @{
  */
 #define SQL_COL_ID_RAWS                 "id_raws" ///< ID raws column name
-#define SQL_COL_ID_MODEM                "id_modem" ///< ID modem column name
 #define SQL_COL_TIMESTAMP               "timestamp" ///< Timestamp column name
-#define SQL_COL_LATITUDE                "latitude" ///< Latitude column name
-#define SQL_COL_STATION                 "station" ///< Station ID
+#define SQL_COL_ID_MODEM                "id_modem" ///< ID modem column name
+#define SQL_COL_SNR                     "snr" ///< Signal column name
+#define SQL_COL_STATION                 "station" ///< Station column name
+#define SQL_COL_ACK                     "ack" ///< Acknowledge column name
 #define SQL_COL_DATA_STR                "data_str" ///< Data string column name
 #define SQL_COL_DATA_HEX                "data_hex" ///< Hexadecimal data column name
-#define SQL_COL_LONGITUDE               "longitude" ///< Longitude column name
-#define SQL_COL_SEQ_NUMBER              "seq_number" ///< Sequence number column name
-#define SQL_COL_ATTRIBUTION             "attribution" ///< Attribution column name
-#define SQL_COL_TIMESTAMP_ATTRIBUTION   "timestamp_attribution"        ///< Timestamp attribution column name
-#define SQL_COL_ACK                     "ack" ///< Acknowledge column name
-#define SQL_COL_LONG_POLLING            "long_polling" ///< Long pollling
 #define SQL_COL_DUPLICATE               "duplicate" ///< Duplicate column name
-#define SQL_COL_SNR                     "snr" ///< Signal column name
 #define SQL_COL_AVG_SIGNAL              "avg_signal" ///< Average signal column name
 #define SQL_COL_RSSI                    "rssi" ///< RSSI column name
+#define SQL_COL_LATITUDE                "latitude" ///< Latitude column name
+#define SQL_COL_LONGITUDE               "longitude" ///< Longitude column name
+#define SQL_COL_SEQ_NUMBER              "seq_number" ///< Sequence number column name
+#define SQL_COL_LONG_POLLING            "long_polling" ///< Long pollling
+#define SQL_COL_ATTRIBUTION             "attribution" ///< Attribution column name
+#define SQL_COL_TIMESTAMP_ATTRIBUTION   "timestamp_attribution"        ///< Timestamp attribution column name
 
 
 /**@}*/
 
-#define SQL_IDX_ID_RAWS     0
-#define SQL_IDX_TIMESTAMP   1
-#define SQL_IDX_ID_MODEM    2
-#define SQL_IDX_SNR         3
-#define SQL_IDX_STATION     4
-#define SQL_IDX_ACK         5
-#define SQL_IDX_DATA_STR    6
-#define SQL_IDX_DATA_HEX    7
-#define SQL_IDX_DUPLICATE   8
-#define SQL_IDX_AVG_SIGNAL  9
-#define SQL_IDX_RSSI        10
-#define SQL_IDX_LATITUDE    11
-#define SQL_IDX_LONGITUDE   12
-#define SQL_IDX_SEQ_NUMBER  13
+
+/**
+ * @defgroup  Raws_col_name  Raws table column names
+ * @{
+ */
+#define SQL_IDX_ID_RAWS     0  ///< ID raws column index
+#define SQL_IDX_TIMESTAMP   1  ///< Timestamp column index
+#define SQL_IDX_ID_MODEM    2  ///< ID modem column index
+#define SQL_IDX_SNR         3  ///< Signal column index
+#define SQL_IDX_STATION     4  ///< Station column index
+#define SQL_IDX_ACK         5  ///< Acknowledge column index
+#define SQL_IDX_DATA_STR    6  ///< Data string column index
+#define SQL_IDX_DATA_HEX    7  ///< Hexadecimal data column index
+#define SQL_IDX_DUPLICATE   8  ///< Duplicate column index
+#define SQL_IDX_AVG_SIGNAL  9  ///< Average signal column index
+#define SQL_IDX_RSSI        10  ///< RSSI column index
+#define SQL_IDX_LATITUDE    11  ///< Latitude column index
+#define SQL_IDX_LONGITUDE   12  ///< Longitude column index
+#define SQL_IDX_SEQ_NUMBER  13  ///< Sequence number column index
+/**@}*/
+
 
 
 /**
- * \brief SQL command to create the 'raws' and 'devices' tables in the database
+ * @brief SQL command to create the 'raws' and 'devices' tables in the database
  */
 #define CREATE_SIGFOX_TABLES \
     "-- CREATION OF THE SIGFOX TABLES WITH SOME DATA\n" \
@@ -94,7 +101,7 @@ extern "C" {
 
 
 /**
- * \brief SQL command to drop 'raws' and 'devices' tables
+ * @brief SQL command to drop 'raws' and 'devices' tables
  */
 #define DROP_SIGFOX_TABLES \
     "-- DELETION OF THE SIGFOX TABLES\n" \
@@ -105,13 +112,13 @@ extern "C" {
 
 
 /**
- * \brief SQL command to select all the colums in the 'raws' table
+ * @brief SQL command to select all the colums in the 'raws' table
  */
 #define SELECT_RAWS "SELECT * FROM `raws`"
 
 
 /**
- * \brief SQL command to select all the colums in the 'devices' table
+ * @brief SQL command to select all the colums in the 'devices' table
  */
 #define SELECT_DEVICES \
     "SELECT timestamp, id_modem, snr, station, ack, data_str, data_hex, duplicate, avg_signal," \
@@ -119,13 +126,13 @@ extern "C" {
 
 
 /**
- * \brief SQL command to insert data from a sigfox_device_t to the database
+ * @brief SQL command to insert data from a sigfox_device_t to the database
  */
 #define INSERT_DEVICES  "INSERT INTO `devices` VALUES (?, ?, ?);"
 
 
 /**
- * \brief SQL command to insert data from a sigfox_raws_t to the database
+ * @brief SQL command to insert data from a sigfox_raws_t to the database
  */
 #define INSERT_RAWS     "INSERT INTO `raws` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
 

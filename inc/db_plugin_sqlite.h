@@ -10,19 +10,19 @@
 
 
 /**
- * \brief      Open the database and create its tables
+ * @brief      Open the database and create its tables
  *
- * \param[in]  db_path  The database path
+ * @param[in]  db_path  The database path
  *
- * \return     Pointer to the database
+ * @return     Pointer to the database
  */
 sqlite3* db_open(const char *db_path);
 
 
 /**
- * \brief      Close the database
+ * @brief      Close the database
  *
- * \param      db_handle  The database handler
+ * @param      db_handle  The database handler
  */
 void db_close(void **db_handler);
 

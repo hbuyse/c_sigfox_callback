@@ -8,22 +8,35 @@
 #include <pthread.h>
 
 
-// #include <database.h>          // sigfox_open_db
-#include <db_plugin_sqlite.h>          // db_open
+#include <db_plugin_sqlite.h>          // db_open, db_close, db_op
 #include <logging.h>            // gprintf, iprintf, eprintf
 #include <frames.h>             // sigfox_device_t
-#include <mongoose.h>
+#include <mongoose.h>           // struct mg_str, struct mg_connection, struct mg_serve_http_opts, mg_printf, mg_serve_http, mg_mgr_init, mg_bind,
+                                // mg_set_protocol_http_websocket, mg_enable_multithreading, mg_mgr_poll, mg_mgr_free
 
 
+/**
+ * @brief  Port for the HTTP websocket
+ */
 #define HTTP_PORT       "8000"
+
+
+/**
+ * @brief  Path to the database
+ */
 #define DATABASE_PATH   "api_server.db"
+
+
+/**
+ * Macro to ans wer 501 Not Implemented
+ */
 #define MG_PRINTF_501   mg_printf(nc, "%s", "HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n")
 
 
 /**
- * \brief List of devices that the program follows
+ * @brief List of devices that the program follows
  */
-const sigfox_device_t                   devices[] =
+const sigfox_device_t     devices[] =
 {
     {.id_modem = "12FED", .attribution = 0, .timestamp_attribution = 0},
     {.id_modem = "12FEE", .attribution = 0, .timestamp_attribution = 0},
@@ -32,26 +45,52 @@ const sigfox_device_t                   devices[] =
 };
 
 
-static struct mg_serve_http_opts        s_http_server_opts;
-static void                             *s_db_handle    = NULL;
-static const struct mg_str              s_get_method    = MG_MK_STR("GET");
-static const struct mg_str              s_post_method   = MG_MK_STR("POST");
-static const struct mg_str              s_put_method    = MG_MK_STR("PUT");
-
-
-// static const struct mg_str              s_delele_method = MG_MK_STR("DELETE");
+/**
+ * @brief      HTTP server options
+ */
+static struct mg_serve_http_opts     s_http_server_opts;
 
 
 /**
- * \brief Signal number caught (if 0, the program continues)
+ * @brief Pointer to the SQLite3 database
+ */
+static void     *s_db_handle = NULL;
+
+
+/**
+ * @brief Mongoose string for the GET method
+ */
+static const struct mg_str     s_get_method     = MG_MK_STR("GET");
+
+
+/**
+ * @brief Mongoose string for the POST method
+ */
+static const struct mg_str     s_post_method    = MG_MK_STR("POST");
+
+
+/**
+ * @brief Mongoose string for the PUT method
+ */
+static const struct mg_str     s_put_method     = MG_MK_STR("PUT");
+
+
+/**
+ * @brief Mongoose string for the DELETE method
+ */
+static const struct mg_str __attribute__( (unused) )     s_delele_method = MG_MK_STR("DELETE");
+
+
+/**
+ * @brief Signal number caught (if 0, the program continues)
  */
 static int     s_sig_num = 0;
 
 
 /**
- * \brief      Signal handler
+ * @brief      Signal handler
  *
- * \param[in]  sig_num  The signal number
+ * @param[in]  sig_num  The signal number
  */
 static void signal_handler(int sig_num)
 {
@@ -63,6 +102,14 @@ static void signal_handler(int sig_num)
 
 
 
+/**
+ * @brief      Check if two Mongoose structure have the same prefix
+ *
+ * @param[in]  uri     The uri
+ * @param[in]  prefix  The prefix
+ *
+ * @return     True if they have the same prefix, False otherwise.
+ */
 static int has_prefix(const struct mg_str   *uri,
                       const struct mg_str   *prefix
                       )
@@ -72,6 +119,14 @@ static int has_prefix(const struct mg_str   *uri,
 
 
 
+/**
+ * @brief      Determines if two Mongoose structure are equal
+ *
+ * @param[in]  s1    The first structure
+ * @param[in]  s2    The second structure
+ *
+ * @return     True if equal, False otherwise.
+ */
 static int is_equal(const struct mg_str *s1,
                     const struct mg_str *s2
                     )
@@ -81,6 +136,13 @@ static int is_equal(const struct mg_str *s1,
 
 
 
+/**
+ * @brief      Event hadler
+ *
+ * @param[in,out]  nc       The non-client
+ * @param[in]      ev       The event
+ * @param[in]      ev_data  The event data
+ */
 static void ev_handler(struct mg_connection *nc,
                        int                  ev,
                        void                 *ev_data
@@ -122,12 +184,10 @@ static void ev_handler(struct mg_connection *nc,
                 {
                     op = API_OP_SET;
                 }
-
-
-                // else if ( is_equal(&hm->method, &s_delele_method) )
-                // {
-                // op = API_OP_DEL;
-                // }
+                else if ( is_equal(&hm->method, &s_delele_method) )
+                {
+                    op = API_OP_NULL;
+                }
 
                 iprintf("%s %s %zu %s\n", method, uri, hm->body.len, body);
 
@@ -154,6 +214,11 @@ static void ev_handler(struct mg_connection *nc,
 
 
 
+/**
+ * @brief      Main program
+ *
+ * @return     0 if everything went well
+ */
 int main(void)
 {
     struct mg_mgr               mgr;

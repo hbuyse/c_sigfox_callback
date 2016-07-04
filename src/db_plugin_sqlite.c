@@ -21,22 +21,22 @@ static void op_del(struct mg_connection *nc, const struct http_message *hm, cons
 
 
 /**
- * \brief      From a JSON structure, we create a raws structure
+ * @brief      From a JSON structure, we create a raws structure
  *
- * \param      raws  The raws structure
- * \param      jobj  The JSON object
+ * @param      raws  The raws structure
+ * @param      jobj  The JSON object
  *
- * \return     0 no error else a number
+ * @return     0 no error else a number
  */
 static unsigned char raws_from_json(sigfox_raws_t *raws, struct json_token *jobj);
 
 
 
 /**
- * \brief           Convert a data string to an hexadecimal array
+ * @brief           Convert a data string to an hexadecimal array
  *
- * \param[in]       data_str  The data as string
- * \param[out]      data_hex  The data as hexadecimal
+ * @param[in]       data_str  The data as string
+ * @param[out]      data_hex  The data as hexadecimal
  */
 static void convert_data_str_to_data_hex(const unsigned char    data_str[SIGFOX_DATA_STR_LENGTH + 1],
                                          unsigned char          data_hex[SIGFOX_DATA_LENGTH]);
@@ -44,17 +44,17 @@ static void convert_data_str_to_data_hex(const unsigned char    data_str[SIGFOX_
 
 #ifdef __DEBUG__
     #define MG_PRINTF_200 \
-    mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"); gprintf("200 OK\n");
+        mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"); gprintf("200 OK\n");
     #define MG_PRINTF_201 \
-    mg_printf(nc, "HTTP/1.1 201 Created\r\nContent-Length: 0\r\n\r\n"); gprintf("201 Created\n");
+        mg_printf(nc, "HTTP/1.1 201 Created\r\nContent-Length: 0\r\n\r\n"); gprintf("201 Created\n");
     #define MG_PRINTF_400 \
-    mg_printf(nc, "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n"); eprintf("400 Bad Request\n");
+        mg_printf(nc, "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n"); eprintf("400 Bad Request\n");
     #define MG_PRINTF_404 \
-    mg_printf(nc, "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"); eprintf("404 Not Found\n");
+        mg_printf(nc, "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"); eprintf("404 Not Found\n");
     #define MG_PRINTF_500 \
-    mg_printf(nc, "HTTP/1.1 500 Server Error\r\nContent-Length: 0\r\n\r\n"); eprintf("500 Server Error\n");
+        mg_printf(nc, "HTTP/1.1 500 Server Error\r\nContent-Length: 0\r\n\r\n"); eprintf("500 Server Error\n");
     #define MG_PRINTF_501 \
-    mg_printf(nc, "HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n"); eprintf("501 Not Implemented\n");
+        mg_printf(nc, "HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n"); eprintf("501 Not Implemented\n");
 #else
     #define MG_PRINTF_200   mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
     #define MG_PRINTF_201   mg_printf(nc, "HTTP/1.1 201 Created\r\nContent-Length: 0\r\n\r\n");
@@ -123,11 +123,11 @@ void db_op(struct mg_connection         *nc,
 
 static void op_set(struct mg_connection         *nc,
                    const struct http_message    *hm,
-                   const struct mg_str          *key __attribute__((unused)),
+                   const struct mg_str          *key __attribute__( (unused) ),
                    void                         *db
                    )
 {
-    sqlite3_stmt        *stmt       = NULL;
+    sqlite3_stmt     *stmt          = NULL;
     const struct mg_str     *body   = (hm->query_string.len > 0) ? &hm->query_string : &hm->body;
     struct json_token       *root   = NULL;
     sigfox_raws_t           raws;
@@ -183,40 +183,43 @@ static void op_get(struct mg_connection         *nc,
                    void                         *db
                    )
 {
-    sqlite3_stmt        *stmt   = NULL;
+    sqlite3_stmt        *stmt = NULL;
     int                 result;
 
 
     if ( sqlite3_prepare_v2(db, SELECT_RAWS, -1, &stmt, NULL) == SQLITE_OK )
     {
-        result  = sqlite3_step(stmt);
+        result = sqlite3_step(stmt);
+
 
         // Send headers
         mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nTransfer-Encoding: chunked\r\n\r\n");
 
         mg_printf_http_chunk(nc, "[ ");
 
-        while ( ((result  = sqlite3_step(stmt)) == SQLITE_OK) || (result == SQLITE_ROW))
+        while ( ( (result = sqlite3_step(stmt) ) == SQLITE_OK) || (result == SQLITE_ROW) )
         {
             mg_printf_http_chunk(nc, "{ ");
-            mg_printf_http_chunk(nc, "\"timestamp\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_TIMESTAMP));
-            mg_printf_http_chunk(nc, "\"id_modem\": \"%s\", ", sqlite3_column_text(stmt, SQL_IDX_ID_MODEM));
-            mg_printf_http_chunk(nc, "\"snr\": %f, ", sqlite3_column_double(stmt, SQL_IDX_SNR));
-            mg_printf_http_chunk(nc, "\"station\": \"%s\", ", sqlite3_column_text(stmt, SQL_IDX_STATION));
-            mg_printf_http_chunk(nc, "\"ack\": %u, ", (sqlite3_column_int(stmt, SQL_IDX_ACK)) ? "true" : "false");
-            mg_printf_http_chunk(nc, "\"data_str\": \"%s\", ", sqlite3_column_text(stmt, SQL_IDX_DATA_STR));
-            mg_printf_http_chunk(nc, "\"duplicate\": %u, ", (sqlite3_column_int(stmt, SQL_IDX_DUPLICATE)) ? "true" : "false");
-            mg_printf_http_chunk(nc, "\"avg_signal\": %f, ", sqlite3_column_double(stmt, SQL_IDX_AVG_SIGNAL));
-            mg_printf_http_chunk(nc, "\"rssi\": %f, ", sqlite3_column_double(stmt, SQL_IDX_RSSI));
-            mg_printf_http_chunk(nc, "\"latitude\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_LATITUDE));
-            mg_printf_http_chunk(nc, "\"longitude\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_LONGITUDE));
-            mg_printf_http_chunk(nc, "\"seq_number\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_SEQ_NUMBER));
+            mg_printf_http_chunk(nc, "\"timestamp\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_TIMESTAMP) );
+            mg_printf_http_chunk(nc, "\"id_modem\": \"%s\", ", sqlite3_column_text(stmt, SQL_IDX_ID_MODEM) );
+            mg_printf_http_chunk(nc, "\"snr\": %f, ", sqlite3_column_double(stmt, SQL_IDX_SNR) );
+            mg_printf_http_chunk(nc, "\"station\": \"%s\", ", sqlite3_column_text(stmt, SQL_IDX_STATION) );
+            mg_printf_http_chunk(nc, "\"ack\": %u, ", (sqlite3_column_int(stmt, SQL_IDX_ACK) ) ? "true" : "false");
+            mg_printf_http_chunk(nc, "\"data_str\": \"%s\", ", sqlite3_column_text(stmt, SQL_IDX_DATA_STR) );
+            mg_printf_http_chunk(nc, "\"duplicate\": %u, ", (sqlite3_column_int(stmt,
+                                                                                SQL_IDX_DUPLICATE) ) ? "true" : "false");
+            mg_printf_http_chunk(nc, "\"avg_signal\": %f, ", sqlite3_column_double(stmt, SQL_IDX_AVG_SIGNAL) );
+            mg_printf_http_chunk(nc, "\"rssi\": %f, ", sqlite3_column_double(stmt, SQL_IDX_RSSI) );
+            mg_printf_http_chunk(nc, "\"latitude\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_LATITUDE) );
+            mg_printf_http_chunk(nc, "\"longitude\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_LONGITUDE) );
+            mg_printf_http_chunk(nc, "\"seq_number\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_SEQ_NUMBER) );
             mg_printf_http_chunk(nc, "}, ");
         }
 
         sqlite3_finalize(stmt);
 
         mg_printf_http_chunk(nc, "]");
+
 
         // Send empty chunk, the end of response
         mg_send_http_chunk(nc, "", 0);

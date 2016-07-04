@@ -1,5 +1,5 @@
 /**
- * @file frame.h
+ * @file frames.h
  * @author hbuyse
  * @date 17/06/2016
  *
@@ -18,43 +18,44 @@ extern "C" {
 
 
 /**
- * \brief Length of a Sigfox data frame in string
+ * @brief Length of a Sigfox data frame in string
  */
 #define SIGFOX_DATA_STR_LENGTH  24
 
 
 /**
- * \brief Length of a Sigfox data frame in hexadecimal
+ * @brief Length of a Sigfox data frame in hexadecimal
  */
 #define SIGFOX_DATA_LENGTH      12
 
 
 /**
- * \brief Length of a Sigfox station name
+ * @brief Length of a Sigfox station name
  */
 #define SIGFOX_STATION_LENGTH   4
 
 
 /**
- * \brief Length of a Sigfox modem name
+ * @brief Length of a Sigfox modem name
  */
 #define SIGFOX_DEVICE_LENGTH    8
 
 
 /**
- * \typedef sigfox_raws_t
+ * @typedef sigfox_raws_t
  */
 typedef struct sigfox_raws_s sigfox_raws_t;
 
 
 /**
- * \typedef sigfox_device_t
+ * @typedef sigfox_device_t
  */
 typedef struct sigfox_device_s sigfox_device_t;
 
 
 /**
- * \brief      Contains all the informations that can be given by the Sigfox backend
+ * @struct     sigfox_raws_s
+ * @brief      Contains all the informations that can be given by the Sigfox backend
  */
 struct sigfox_raws_s {
     unsigned char id_modem[SIGFOX_DEVICE_LENGTH + 1];          ///< device identifier (in hexadecimal – up to 8 characters <=> 4 bytes)
@@ -79,12 +80,13 @@ struct sigfox_raws_s {
 
 
 /**
- * \brief      Contains all the informations that defines a Sigfox device
+ * @struct     sigfox_device_s
+ * @brief      Contains all the informations that defines a Sigfox device
  */
 struct sigfox_device_s {
     unsigned char id_modem[SIGFOX_DEVICE_LENGTH];          ///< device identifier (in hexadecimal – up to 8 characters <=> 4 bytes)
-    int attribution;
-    int timestamp_attribution;
+    int attribution;                                        ///< Attrbution variable
+    int timestamp_attribution;                              ///< Timestamp of the attribution
 };
 
 #ifdef     __cplusplus
