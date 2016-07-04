@@ -13,6 +13,18 @@
 
 
 /**
+ * @enum API_Operation
+ * @brief  Possible operation to do on the database
+ */
+typedef enum {
+    API_OP_NULL,          ///< Do nothing
+    API_OP_GET,          ///< Select * from raws
+    API_OP_SET,          ///< Add a raws structure
+    API_OP_DEL          ///< Delete a raws structure (Not Implemented yet)
+} API_Operation;
+
+
+/**
  * @brief      Open the database and create its tables
  *
  * @param[in]  db_path  The database path
@@ -30,13 +42,15 @@ sqlite3* db_open(const char *db_path);
 void db_close(void **db_handler);
 
 
-typedef enum {
-    API_OP_NULL,
-    API_OP_GET,
-    API_OP_SET,
-    API_OP_DEL
-} API_Operation;
-
+/**
+ * \brief      Do an operation on the database
+ *
+ * \param      nc    The non-client
+ * \param[in]  hm    The HTTP message
+ * \param[in]  key   The key
+ * \param      db    The database
+ * \param[in]  op    The operation
+ */
 void db_op(struct mg_connection *nc, const struct http_message *hm, const struct mg_str *key, void *db, int op);
 
 

@@ -157,11 +157,11 @@ static void op_set(struct mg_connection         *nc,
                    void                         *db
                    )
 {
-    sqlite3_stmt     *stmt          = NULL;
+    sqlite3_stmt        *stmt       = NULL;
     const struct mg_str     *body   = (hm->query_string.len > 0) ? &hm->query_string : &hm->body;
     struct json_token       *root   = NULL;
     sigfox_raws_t           raws;
-    int result = 0;
+    int                 result      = 0;
 
 
     root = parse_json2(body->p, body->len);
@@ -290,9 +290,9 @@ static void op_get(struct mg_connection         *nc,
 
         // Send empty chunk, the end of response
         mg_send_http_chunk(nc, "", 0);
-        #ifdef __DEBUG__
+#ifdef __DEBUG__
         gprintf("200 OK\n");
-        #endif
+#endif
     }
     else
     {
