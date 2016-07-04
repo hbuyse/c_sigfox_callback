@@ -42,7 +42,7 @@ extern "C" {
 
 
 /**
- * @defgroup  Raws_col_name  Raws table column names
+ * @defgroup  Raws_col_idx  Raws table column index
  * @{
  */
 #define SQL_IDX_ID_RAWS     0  ///< ID raws column index
