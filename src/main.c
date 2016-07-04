@@ -6,18 +6,18 @@
 #include <stdio.h>          // fprintf
 #include <sqlite3.h>          // sqlite3
 #include <pthread.h>
-#include <json/json.h>
 
 
 // #include <database.h>          // sigfox_open_db
 #include <db_plugin_sqlite.h>          // db_open
-#include <logging.h>            // gprintf
+#include <logging.h>            // gprintf, iprintf, eprintf
 #include <frames.h>             // sigfox_device_t
 #include <mongoose.h>
 
 
-#define HTTP_PORT "8000"
-#define DATABASE_PATH "api_server.db"
+#define HTTP_PORT       "8000"
+#define DATABASE_PATH   "api_server.db"
+#define MG_PRINTF_501   mg_printf(nc, "%s", "HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n")
 
 
 /**
@@ -37,13 +37,15 @@ static void                             *s_db_handle    = NULL;
 static const struct mg_str              s_get_method    = MG_MK_STR("GET");
 static const struct mg_str              s_post_method   = MG_MK_STR("POST");
 static const struct mg_str              s_put_method    = MG_MK_STR("PUT");
-static const struct mg_str              s_delele_method = MG_MK_STR("DELETE");
+
+
+// static const struct mg_str              s_delele_method = MG_MK_STR("DELETE");
 
 
 /**
  * \brief Signal number caught (if 0, the program continues)
  */
-static int                              s_sig_num       = 0;
+static int     s_sig_num = 0;
 
 
 /**
@@ -53,7 +55,7 @@ static int                              s_sig_num       = 0;
  */
 static void signal_handler(int sig_num)
 {
-    eprintf("Signal %s caught\n", strsignal(sig_num));
+    eprintf("Signal %s caught\n", strsignal(sig_num) );
 
     signal(sig_num, signal_handler);
     s_sig_num = sig_num;
@@ -65,7 +67,7 @@ static int has_prefix(const struct mg_str   *uri,
                       const struct mg_str   *prefix
                       )
 {
-    return ((uri->len >= prefix->len) && (memcmp(uri->p, prefix->p, prefix->len) == 0));
+    return ( (uri->len >= prefix->len) && (memcmp(uri->p, prefix->p, prefix->len) == 0) );
 }
 
 
@@ -74,7 +76,7 @@ static int is_equal(const struct mg_str *s1,
                     const struct mg_str *s2
                     )
 {
-    return ((s1->len == s2->len) && (memcmp(s1->p, s2->p, s2->len) == 0));
+    return ( (s1->len == s2->len) && (memcmp(s1->p, s2->p, s2->len) == 0) );
 }
 
 
@@ -85,28 +87,28 @@ static void ev_handler(struct mg_connection *nc,
                        )
 {
     static const struct mg_str      api_prefix  = MG_MK_STR("/api");
-    struct http_message             *hm          = (struct http_message *) ev_data;
+    struct http_message             *hm         = (struct http_message *) ev_data;
     struct mg_str     key;
 
 
     switch ( ev )
     {
         case MG_EV_HTTP_REQUEST:
+
             if ( has_prefix(&hm->uri, &api_prefix) )
             {
-                API_Operation op = API_OP_NULL;
+                API_Operation       op = API_OP_NULL;
 
-                char body[4096];
-                char uri[1024];
-                char method[10];
+                char                body[4096];
+                char                uri[1024];
+                char                method[10];
 
                 key.p   = hm->uri.p + api_prefix.len;       // Memory chunk pointer
-                key.len = hm->uri.len - api_prefix.len;     // Memory chunk length
+                key.len = hm->uri.len - api_prefix.len;          // Memory chunk length
 
                 snprintf(body, hm->body.len + sizeof(char), "%s", hm->body.p);
                 snprintf(uri, hm->uri.len + sizeof(char), "%s", hm->uri.p);
                 snprintf(method, hm->method.len + sizeof(char), "%s", hm->method.p);
-                
 
                 if ( is_equal(&hm->method, &s_get_method) )
                 {
@@ -120,16 +122,18 @@ static void ev_handler(struct mg_connection *nc,
                 {
                     op = API_OP_SET;
                 }
-                else if ( is_equal(&hm->method, &s_delele_method) )
-                {
-                    op = API_OP_DEL;
-                }
-                
-                printf("%s %s %zu %s\n", method, uri, hm->body.len, body);
 
-                if (op == API_OP_NULL)
+
+                // else if ( is_equal(&hm->method, &s_delele_method) )
+                // {
+                // op = API_OP_DEL;
+                // }
+
+                iprintf("%s %s %zu %s\n", method, uri, hm->body.len, body);
+
+                if ( op == API_OP_NULL )
                 {
-                    mg_printf(nc, "HTTP/1.0 501 Not Implemented\r\nContent-Length: 0\r\n\r\n");
+                    MG_PRINTF_501;
                 }
                 else
                 {
@@ -155,8 +159,10 @@ int main(void)
     struct mg_mgr               mgr;
     struct mg_connection        *nc;
 
+
     // Initiate the manager
     mg_mgr_init(&mgr, NULL);
+
 
     // Open listening socket
     nc = mg_bind(&mgr, HTTP_PORT, ev_handler);
@@ -165,17 +171,23 @@ int main(void)
     {
         eprintf("Binding failed!\n");
 
-        return 1;
+        return (1);
     }
+
 
     // Use websocket
     mg_set_protocol_http_websocket(nc);
 
+
     /* For each new connection, execute ev_handler in a separate thread */
-    mg_enable_multithreading(nc);
+
+
+    // mg_enable_multithreading(nc);
+
 
     // Set the docuement root
     s_http_server_opts.document_root = "web_root";
+
 
     // Handle the system signals
     signal(SIGINT, signal_handler);
@@ -192,6 +204,7 @@ int main(void)
 
     // Run event loop until signal is received
     gprintf("Starting RESTful server on port %s\n", HTTP_PORT);
+
     while ( s_sig_num == 0 )
     {
         /*
