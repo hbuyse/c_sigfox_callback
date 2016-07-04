@@ -179,17 +179,7 @@ int main(void)
     mg_set_protocol_http_websocket(nc);
 
 
-    /* For each new connection, execute ev_handler in a separate thread */
-
-    // Add a device into the list
-    devices_len = sizeof(devices) / sizeof(devices[0]);
-
-    for ( i = 0; i < devices_len; ++i )
-    {
-        sigfox_insert_devices(&db, devices[i]);
-    }
-
-
+    // For each new connection, execute ev_handler in a separate thread
     // mg_enable_multithreading(nc);
 
 
