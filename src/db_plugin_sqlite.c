@@ -191,11 +191,36 @@ static void op_get(struct mg_connection         *nc,
     {
         result  = sqlite3_step(stmt);
 
+        // Send headers
+        mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nTransfer-Encoding: chunked\r\n\r\n");
 
+        mg_printf_http_chunk(nc, "[ ");
+
+        while ( ((result  = sqlite3_step(stmt)) == SQLITE_OK) || (result == SQLITE_ROW))
         {
+            mg_printf_http_chunk(nc, "{ ");
+            mg_printf_http_chunk(nc, "\"timestamp\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_TIMESTAMP));
+            mg_printf_http_chunk(nc, "\"id_modem\": \"%s\", ", sqlite3_column_text(stmt, SQL_IDX_ID_MODEM));
+            mg_printf_http_chunk(nc, "\"snr\": %f, ", sqlite3_column_double(stmt, SQL_IDX_SNR));
+            mg_printf_http_chunk(nc, "\"station\": \"%s\", ", sqlite3_column_text(stmt, SQL_IDX_STATION));
+            mg_printf_http_chunk(nc, "\"ack\": %u, ", (sqlite3_column_int(stmt, SQL_IDX_ACK)) ? "true" : "false");
+            mg_printf_http_chunk(nc, "\"data_str\": \"%s\", ", sqlite3_column_text(stmt, SQL_IDX_DATA_STR));
+            mg_printf_http_chunk(nc, "\"duplicate\": %u, ", (sqlite3_column_int(stmt, SQL_IDX_DUPLICATE)) ? "true" : "false");
+            mg_printf_http_chunk(nc, "\"avg_signal\": %f, ", sqlite3_column_double(stmt, SQL_IDX_AVG_SIGNAL));
+            mg_printf_http_chunk(nc, "\"rssi\": %f, ", sqlite3_column_double(stmt, SQL_IDX_RSSI));
+            mg_printf_http_chunk(nc, "\"latitude\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_LATITUDE));
+            mg_printf_http_chunk(nc, "\"longitude\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_LONGITUDE));
+            mg_printf_http_chunk(nc, "\"seq_number\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_SEQ_NUMBER));
+            mg_printf_http_chunk(nc, "}, ");
         }
 
         sqlite3_finalize(stmt);
+
+        mg_printf_http_chunk(nc, "]");
+
+        // Send empty chunk, the end of response
+        mg_send_http_chunk(nc, "", 0);
+        gprintf("200 OK\n");
     }
     else
     {
