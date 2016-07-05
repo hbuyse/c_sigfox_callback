@@ -8,7 +8,7 @@ C SIGFOX CALLBACK
     :target: https://codedocs.xyz/hbuyse/c_sigfox_callback
 
 
-.. contents:: Sommaire
+.. contents::
 
 
 Compilation
