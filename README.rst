@@ -21,9 +21,9 @@ In order to compile the program, you simply have to do:
     make [OPTIONS]
 
 Options available :
-    OPTIM=NONE|DEBUG|SIZE|SPEED   (dft : DEBUG)
-    STATIC=0|1                    (dft : 0)
-    V=0|1                         (dft : 0)
+ * OPTIM=NONE|DEBUG|SIZE|SPEED  (dft : DEBUG)
+ * STATIC=0|1  (dft : 0)
+ * V=0|1  (dft : 0)
 
 
 Utilization
