@@ -1,8 +1,11 @@
 C SIGFOX CALLBACK
 #################
 
-[![Build Status](https://travis-ci.org/hbuyse/c_sigfox_callback.svg?branch=master)](https://travis-ci.org/hbuyse/c_sigfox_callback)
-[![Documentation](https://codedocs.xyz/hbuyse/c_sigfox_callback.svg)](https://codedocs.xyz/hbuyse/c_sigfox_callback/)
+.. image:: https://travis-ci.org/hbuyse/c_sigfox_callback.svg?branch=master
+    :target: https://travis-ci.org/hbuyse/c_sigfox_callback
+
+.. image:: https://codedocs.xyz/hbuyse/c_sigfox_callback.svg
+    :target: https://codedocs.xyz/hbuyse/c_sigfox_callback
 
 
 .. contents:: Sommaire
