@@ -262,9 +262,12 @@ static void op_get(struct mg_connection         *nc,
         // Send headers
         mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nTransfer-Encoding: chunked\r\n\r\n");
 
+        // Open the JSON list
         mg_printf_http_chunk(nc, "[ ");
 
-        while ( ( (result = sqlite3_step(stmt) ) == SQLITE_OK) || (result == SQLITE_ROW) )
+        // While there is a SQLite row being returned, we process it
+        // The final step returns a SQLITE_DONE
+        for ( ; sqlite3_step(stmt) == SQLITE_ROW; )
         {
             mg_printf_http_chunk(nc, "{ ");
             mg_printf_http_chunk(nc, "\"timestamp\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_TIMESTAMP) );
@@ -273,8 +276,7 @@ static void op_get(struct mg_connection         *nc,
             mg_printf_http_chunk(nc, "\"station\": \"%s\", ", sqlite3_column_text(stmt, SQL_IDX_STATION) );
             mg_printf_http_chunk(nc, "\"ack\": %u, ", (sqlite3_column_int(stmt, SQL_IDX_ACK) ) ? "true" : "false");
             mg_printf_http_chunk(nc, "\"data_str\": \"%s\", ", sqlite3_column_text(stmt, SQL_IDX_DATA_STR) );
-            mg_printf_http_chunk(nc, "\"duplicate\": %u, ", (sqlite3_column_int(stmt,
-                                                                                SQL_IDX_DUPLICATE) ) ? "true" : "false");
+            mg_printf_http_chunk(nc, "\"duplicate\": %u, ", (sqlite3_column_int(stmt,SQL_IDX_DUPLICATE) ) ? "true" : "false");
             mg_printf_http_chunk(nc, "\"avg_signal\": %f, ", sqlite3_column_double(stmt, SQL_IDX_AVG_SIGNAL) );
             mg_printf_http_chunk(nc, "\"rssi\": %f, ", sqlite3_column_double(stmt, SQL_IDX_RSSI) );
             mg_printf_http_chunk(nc, "\"latitude\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_LATITUDE) );
@@ -285,11 +287,13 @@ static void op_get(struct mg_connection         *nc,
 
         sqlite3_finalize(stmt);
 
+        // Close the JSON list
         mg_printf_http_chunk(nc, "]");
 
 
         // Send empty chunk, the end of response
         mg_send_http_chunk(nc, "", 0);
+
 #ifdef __DEBUG__
         gprintf("200 OK\n");
 #endif
