@@ -116,15 +116,20 @@ extern "C" {
 /**
  * @brief SQL command to select all the colums in the 'raws' table
  */
-#define SELECT_RAWS "SELECT * FROM `raws`"
+#define SELECT_RAWS "SELECT timestamp, id_modem, snr, station, ack, data_str, data_hex, duplicate, avg_signal," \
+    "rssi, latitude, longitude, seq_number FROM `raws`"
 
 
 /**
  * @brief SQL command to select all the colums in the 'devices' table
  */
-#define SELECT_DEVICES \
-    "SELECT timestamp, id_modem, snr, station, ack, data_str, data_hex, duplicate, avg_signal," \
-    "rssi, latitude, longitude, seq_number FROM `devices`"
+#define SELECT_DEVICES  "SELECT * FROM `devices`;"
+
+
+/**
+ * @brief SQL command to delete every record from the table raws
+ */
+#define DELETE_RAWS     "DELETE FROM raws;"
 
 
 /**

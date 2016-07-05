@@ -307,32 +307,14 @@ static void op_get(struct mg_connection         *nc,
 
 
 static void op_del(struct mg_connection         *nc,
-                   const struct http_message    *hm,
-                   const struct mg_str          *key,
+                   const struct http_message    *hm __attribute__((unused)),
+                   const struct mg_str          *key __attribute__((unused)),
                    void                         *db
                    )
 {
-    sqlite3_stmt        *stmt = NULL;
-    int                 result;
-
-
-    (void) hm;
-
-    if ( sqlite3_prepare_v2(db, "DELETE FROM kv WHERE key = ?;", -1, &stmt, NULL) == SQLITE_OK )
+    if (sqlite3_exec(db, DELETE_RAWS, 0, 0, 0) == SQLITE_OK)
     {
-        sqlite3_bind_text(stmt, 1, key->p, key->len, SQLITE_STATIC);
-        result = sqlite3_step(stmt);
-
-        if ( (result == SQLITE_OK) || (result == SQLITE_ROW) )
-        {
-            MG_PRINTF_200
-        }
-        else
-        {
-            MG_PRINTF_404
-        }
-
-        sqlite3_finalize(stmt);
+        MG_PRINTF_200
     }
     else
     {
