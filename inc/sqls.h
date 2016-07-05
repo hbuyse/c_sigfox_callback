@@ -116,7 +116,8 @@ extern "C" {
 /**
  * @brief SQL command to select all the colums in the 'raws' table
  */
-#define SELECT_RAWS "SELECT timestamp, id_modem, snr, station, ack, data_str, data_hex, duplicate, avg_signal," \
+#define SELECT_RAWS \
+    "SELECT timestamp, id_modem, snr, station, ack, data_str, data_hex, duplicate, avg_signal," \
     "rssi, latitude, longitude, seq_number FROM `raws`"
 
 

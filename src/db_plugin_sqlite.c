@@ -262,6 +262,7 @@ static void op_get(struct mg_connection         *nc,
         // Send headers
         mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nTransfer-Encoding: chunked\r\n\r\n");
 
+
         // Open the JSON list
         mg_printf_http_chunk(nc, "[ ");
 
@@ -276,7 +277,8 @@ static void op_get(struct mg_connection         *nc,
             mg_printf_http_chunk(nc, "\"station\": \"%s\", ", sqlite3_column_text(stmt, SQL_IDX_STATION) );
             mg_printf_http_chunk(nc, "\"ack\": %u, ", (sqlite3_column_int(stmt, SQL_IDX_ACK) ) ? "true" : "false");
             mg_printf_http_chunk(nc, "\"data_str\": \"%s\", ", sqlite3_column_text(stmt, SQL_IDX_DATA_STR) );
-            mg_printf_http_chunk(nc, "\"duplicate\": %u, ", (sqlite3_column_int(stmt,SQL_IDX_DUPLICATE) ) ? "true" : "false");
+            mg_printf_http_chunk(nc, "\"duplicate\": %u, ", (sqlite3_column_int(stmt,
+                                                                                SQL_IDX_DUPLICATE) ) ? "true" : "false");
             mg_printf_http_chunk(nc, "\"avg_signal\": %f, ", sqlite3_column_double(stmt, SQL_IDX_AVG_SIGNAL) );
             mg_printf_http_chunk(nc, "\"rssi\": %f, ", sqlite3_column_double(stmt, SQL_IDX_RSSI) );
             mg_printf_http_chunk(nc, "\"latitude\": %lu, ", sqlite3_column_int(stmt, SQL_IDX_LATITUDE) );
@@ -286,6 +288,7 @@ static void op_get(struct mg_connection         *nc,
         }
 
         sqlite3_finalize(stmt);
+
 
         // Close the JSON list
         mg_printf_http_chunk(nc, "]");
@@ -307,12 +310,12 @@ static void op_get(struct mg_connection         *nc,
 
 
 static void op_del(struct mg_connection         *nc,
-                   const struct http_message    *hm __attribute__((unused)),
-                   const struct mg_str          *key __attribute__((unused)),
+                   const struct http_message    *hm __attribute__( (unused) ),
+                   const struct mg_str          *key __attribute__( (unused) ),
                    void                         *db
                    )
 {
-    if (sqlite3_exec(db, DELETE_RAWS, 0, 0, 0) == SQLITE_OK)
+    if ( sqlite3_exec(db, DELETE_RAWS, 0, 0, 0) == SQLITE_OK )
     {
         MG_PRINTF_200
     }
