@@ -3,7 +3,6 @@
  * @author: hbuyse
  */
 
-#include <stdio.h>          // fprintf
 #include <sqlite3.h>          // sqlite3
 #include <pthread.h>
 
@@ -78,7 +77,7 @@ static const struct mg_str     s_put_method     = MG_MK_STR("PUT");
 /**
  * @brief Mongoose string for the DELETE method
  */
-static const struct mg_str __attribute__( (unused) )     s_delele_method = MG_MK_STR("DELETE");
+static const struct mg_str     s_delele_method  = MG_MK_STR("DELETE");
 
 
 /**
@@ -190,7 +189,7 @@ static void ev_handler(struct mg_connection *nc,
                 }
                 else if ( is_equal(&hm->method, &s_delele_method) )
                 {
-                    op = API_OP_NULL;
+                    op = API_OP_DEL;
                 }
 
                 if ( op == API_OP_NULL )
@@ -247,7 +246,7 @@ int main(void)
 
 
     // For each new connection, execute ev_handler in a separate thread
-    // mg_enable_multithreading(nc);
+    mg_enable_multithreading(nc);
 
 
     // Set the docuement root
