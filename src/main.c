@@ -148,6 +148,7 @@ static void ev_handler(struct mg_connection *nc,
                        )
 {
     static const struct mg_str      api_prefix  = MG_MK_STR("/api");
+    static const struct mg_str      root_prefix  = MG_MK_STR("/");
     struct http_message             *hm         = (struct http_message *) ev_data;
     struct mg_str     key;
 
@@ -204,7 +205,15 @@ static void ev_handler(struct mg_connection *nc,
             else
             {
                 mg_serve_http(nc, hm, s_http_server_opts);          /* Serve static content */
-                gprintf("404 Not Found\n");
+
+                if (is_equal(&hm->uri, &root_prefix))
+                {
+                    gprintf("200 OK\n");
+                }
+                else
+                {
+                    gprintf("404 Not Found\n");
+                }
             }
 
             break;
