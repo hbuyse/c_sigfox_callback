@@ -155,22 +155,22 @@ static void ev_handler(struct mg_connection *nc,
     switch ( ev )
     {
         case MG_EV_HTTP_REQUEST:
+        {
+#ifdef __DEBUG__
+            char                body[4096];
+            char                uri[1024];
+            char                method[10];
+
+            snprintf(body, hm->body.len + sizeof(char), "%s", hm->body.p);
+            snprintf(uri, hm->uri.len + sizeof(char), "%s", hm->uri.p);
+            snprintf(method, hm->method.len + sizeof(char), "%s", hm->method.p);
+
+            iprintf("%s %s %zu %s\n", method, uri, hm->body.len, body);
+#endif
 
             if ( has_prefix(&hm->uri, &api_prefix) )
             {
                 API_Operation       op = API_OP_NULL;
-
-#ifdef __DEBUG__
-                char                body[4096];
-                char                uri[1024];
-                char                method[10];
-
-                snprintf(body, hm->body.len + sizeof(char), "%s", hm->body.p);
-                snprintf(uri, hm->uri.len + sizeof(char), "%s", hm->uri.p);
-                snprintf(method, hm->method.len + sizeof(char), "%s", hm->method.p);
-
-                iprintf("%s %s %zu %s\n", method, uri, hm->body.len, body);
-#endif
 
                 key.p   = hm->uri.p + api_prefix.len;       // Memory chunk pointer
                 key.len = hm->uri.len - api_prefix.len;          // Memory chunk length
@@ -204,12 +204,16 @@ static void ev_handler(struct mg_connection *nc,
             else
             {
                 mg_serve_http(nc, hm, s_http_server_opts);          /* Serve static content */
+                gprintf("404 Not Found\n");
             }
 
             break;
+        }
 
         default:
+        {
             break;
+        }
     }
 }
 
