@@ -251,12 +251,11 @@ static void op_get(struct mg_connection         *nc,
                    )
 {
     sqlite3_stmt        *stmt = NULL;
-    int                 result;
 
 
     if ( sqlite3_prepare_v2(db, SELECT_RAWS, -1, &stmt, NULL) == SQLITE_OK )
     {
-        result = sqlite3_step(stmt);
+        sqlite3_step(stmt);
 
 
         // Send headers
