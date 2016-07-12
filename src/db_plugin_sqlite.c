@@ -250,7 +250,7 @@ static void op_get(struct mg_connection         *nc,
                    void                         *db
                    )
 {
-    sqlite3_stmt        *stmt = NULL;
+    sqlite3_stmt     *stmt = NULL;
 
 
     if ( sqlite3_prepare_v2(db, SELECT_RAWS, -1, &stmt, NULL) == SQLITE_OK )

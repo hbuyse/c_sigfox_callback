@@ -23,7 +23,11 @@ extern "C" {
  * @param      format  The format
  * @param      ...     The list of the arguments
  */
-#define iprintf(format, ...)    fprintf(stderr, "\e[1m[%s]\e[0m " format, __func__, ## __VA_ARGS__)
+#ifdef __DEBUG__
+    #define iprintf(format, ...)    fprintf(stdout, "\e[1m[%s]\e[0m " format, __func__, ## __VA_ARGS__)
+#else
+    #define iprintf(format, ...)    fprintf(stdout, "INFO:    " format, ## __VA_ARGS__)
+#endif
 
 
 /**
@@ -32,7 +36,11 @@ extern "C" {
  * @param      format  The format
  * @param      ...     The list of the arguments
  */
-#define eprintf(format, ...)    fprintf(stderr, "\e[1;31m[%s]\e[0m " format, __func__, ## __VA_ARGS__)
+#ifdef __DEBUG__
+    #define eprintf(format, ...)    fprintf(stderr, "\e[1;31m[%s]\e[0m " format, __func__, ## __VA_ARGS__)
+#else
+    #define eprintf(format, ...)    fprintf(stdout, "\e[1;31mERROR:\e[0m   " format, ## __VA_ARGS__)
+#endif
 
 
 /**
@@ -41,7 +49,11 @@ extern "C" {
  * @param      format  The format
  * @param      ...     The list of the arguments
  */
-#define cprintf(format, ...)    fprintf(stdout, "\e[1;33m[%s]\e[0m " format, __func__, ## __VA_ARGS__)
+#ifdef __DEBUG__
+    #define cprintf(format, ...)    fprintf(stdout, "\e[1;33m[%s]\e[0m " format, __func__, ## __VA_ARGS__)
+#else
+    #define cprintf(format, ...)    fprintf(stdout, "\e[1;33mCAUTION:\e[0m " format, ## __VA_ARGS__)
+#endif
 
 
 /**
@@ -50,7 +62,11 @@ extern "C" {
  * @param      format  The format
  * @param      ...     The list of the arguments
  */
-#define gprintf(format, ...)    fprintf(stdout, "\e[1;32m[%s]\e[0m " format, __func__, ## __VA_ARGS__)
+#ifdef __DEBUG__
+    #define gprintf(format, ...)    fprintf(stdout, "\e[1;32m[%s]\e[0m " format, __func__, ## __VA_ARGS__)
+#else
+    #define gprintf(format, ...)    fprintf(stdout, format, ## __VA_ARGS__)
+#endif
 
 #ifdef     __cplusplus
 }

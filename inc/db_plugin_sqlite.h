@@ -57,6 +57,7 @@ void db_close(void **db_handler);
  */
 void db_op(struct mg_connection *nc, const struct http_message *hm, const struct mg_str *key, void *db, int op);
 
+
 #ifdef     __cplusplus
 }
 #endif
