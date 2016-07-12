@@ -17,7 +17,6 @@ DIR_OBJ    = $(DIR_TARGET)/obj
 DIR_DEP    = $(DIR_TARGET)/dep
 DIR_PREPRO = $(DIR_TARGET)/prepro
 DIR_LST    = $(DIR_TARGET)/lst
-DIR_TESTS  = ./tests
 
 
 LIB_SHARED = $(DIR_LIB)/lib$(EXEC:.out=.so)
@@ -95,7 +94,7 @@ $(LIB_STATIC): $(OBJ_LIB)
 
 
 test: $(LIB_STATIC)
-	$(VERBOSE) $(MAKE) -C $(DIR_TESTS) CC=$(CC) LD=$(LD)
+	$(VERBOSE) py.test
 
 
 # Include of the dependencies generated in %.o
@@ -125,7 +124,6 @@ endif
 
 # clean : clean all objects files
 clean:
-	$(VERBOSE) $(MAKE) -C $(DIR_TESTS) clean
 	$(VERBOSE) [ ! -d "$(DIR_OBJ)" ] || find $(DIR_OBJ) -type f -name '*.o' -delete
 	$(VERBOSE) [ ! -d "$(DIR_PREPRO)" ] || find $(DIR_PREPRO) -type f -name '*.i' -delete
 	$(VERBOSE) [ ! -d "$(DIR_LST)" ] || find $(DIR_LST) -type f -name '*.lst' -delete
@@ -134,7 +132,6 @@ clean:
 # distclean : clean all objects files and the executable
 d: distclean
 distclean: clean
-	$(VERBOSE) $(MAKE) -C $(DIR_TESTS) distclean
 	$(VERBOSE) [ ! -d "$(DIR_DEP)" ] || find $(DIR_DEP) -type f -name '*.d' -delete
 	$(VERBOSE) [ ! -d "$(DIR_LIB)" ] || find $(DIR_LIB) -type f -name '*.so' -delete
 	$(VERBOSE) [ ! -d "$(DIR_LIB)" ] || find $(DIR_LIB) -type f -name '*.a' -delete
