@@ -15,6 +15,11 @@ os:
   - linux
   - osx
 
+before_script:
+  - pip install pytest
+
 script:
-  - make CC=${CC} LD=${CC} OPTIM=NONE test
-  - ./tests/main.out
+  - make CC=${CC} LD=${CC} OPTIM=NONE
+  - PID=$!
+  - make test
+  - kill ${PID}
