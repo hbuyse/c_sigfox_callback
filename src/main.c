@@ -281,7 +281,7 @@ int main(int    argc,
 
 
     // Run event loop until signal is received
-    gprintf("Starting RESTful server on port %s\n", HTTP_PORT);
+    gprintf("Starting RESTful server on port %s\n", port);
 
     while ( s_sig_num == 0 )
     {
