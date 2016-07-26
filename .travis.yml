@@ -16,7 +16,7 @@ os:
   - osx
 
 before_script:
-  - pip install pytest
+  - sudo pip install pytest
 
 script:
   - make CC=${CC} LD=${CC} OPTIM=NONE
