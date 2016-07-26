@@ -20,6 +20,7 @@ before_script:
 
 script:
   - make CC=${CC} LD=${CC} OPTIM=NONE
+  - ./sigfox_callback.out &
   - PID=$!
   - make test
   - kill ${PID}
