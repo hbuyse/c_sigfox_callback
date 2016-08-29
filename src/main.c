@@ -170,7 +170,7 @@ int main(int    argc,
     static struct option        long_options[] =
     {
         {"help", no_argument, 0, 'h'},
-        {"port", required_argument, 0, 'p'},
+        {"port", optional_argument, 0, 'p'},
         {0, 0, 0, 0}
     };
 
@@ -180,19 +180,12 @@ int main(int    argc,
     struct mg_connection        *nc;
 
 
-    if ( argc == 1 )
-    {
-        usage(argv[0]);
-        exit(EXIT_FAILURE);
-    }
-
-
     /* CAREFUL:
      * An option character in this string can be followed by a colon (‘:’) to indicate that it takes a required
      * argument. If an option character is followed by two colons (‘::’), its argument is optional; this is a GNU
      * extension.
      */
-    while ( (opt = getopt_long(argc, argv, "hp:", long_options, &long_index) ) != -1 )
+    while ( (opt = getopt_long(argc, argv, "hp", long_options, &long_index) ) != -1 )
     {
         switch ( opt )
         {
@@ -213,11 +206,11 @@ int main(int    argc,
                 {
                     if ( optopt == 'p' )
                     {
-                        fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                        eprintf("Option -%c requires an argument.\n", optopt);
                     }
                     else
                     {
-                        fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
+                        eprintf("Unknown option character `\\x%x'.\n", optopt);
                     }
 
                     usage(argv[0]);
@@ -225,14 +218,11 @@ int main(int    argc,
                 }
 
             default:
-                {
-                    usage(argv[0]);
-                    exit(EXIT_FAILURE);
-                }
+                break;
         }
     }
 
-    if ( strtol(port, NULL, 10) == 0L )
+    if ( strtol((port) ? port : HTTP_PORT, NULL, 10) == 0L )
     {
         eprintf("%s is not a good port for the RESTful server...\n", port);
         eprintf("Please select an other one.\n");
